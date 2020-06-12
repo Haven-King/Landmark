@@ -19,7 +19,7 @@ import net.minecraft.world.dimension.DimensionType;
 public class LandmarkTracker extends PersistentState {
 	private static final String ID = "landmarks";
 
-	private final HashMap<RegistryKey<DimensionType>, HashMap<BlockPos, String>> landmarkNames = new HashMap<>();
+	private final HashMap<RegistryKey<World>, HashMap<BlockPos, String>> landmarkNames = new HashMap<>();
 
 	public LandmarkTracker() {
 		super(ID);
@@ -30,13 +30,13 @@ public class LandmarkTracker extends PersistentState {
 		CompoundTag landmarkTag = tag.getCompound(ID);
 
 		for (String key : landmarkTag.getKeys()) {
-			CompoundTag dimensionTag = landmarkTag.getCompound(key);
-			RegistryKey<DimensionType> dimension = RegistryKey.of(Registry.DIMENSION_TYPE_KEY, new Identifier(key));
+			CompoundTag worldTag = landmarkTag.getCompound(key);
+			RegistryKey<World> world = RegistryKey.of(Registry.DIMENSION, new Identifier(key));
 
-			for (String blockPos : dimensionTag.getKeys()) {
-				this.landmarkNames.computeIfAbsent(dimension, (k) -> new HashMap<>()).put(
+			for (String blockPos : worldTag.getKeys()) {
+				this.landmarkNames.computeIfAbsent(world, (k) -> new HashMap<>()).put(
 						BlockPos.fromLong(Long.parseLong(blockPos)),
-						dimensionTag.getString(blockPos)
+						worldTag.getString(blockPos)
 				);
 			}
 		}
@@ -46,14 +46,14 @@ public class LandmarkTracker extends PersistentState {
 	public CompoundTag toTag(CompoundTag tag) {
 		CompoundTag landmarkTag = new CompoundTag();
 
-		for (RegistryKey<DimensionType> key : landmarkNames.keySet()) {
-			CompoundTag dimensionTag = new CompoundTag();
+		for (RegistryKey<World> key : landmarkNames.keySet()) {
+			CompoundTag worldTag = new CompoundTag();
 
 			for (Map.Entry<BlockPos, String> entry : landmarkNames.get(key).entrySet()) {
-				dimensionTag.putString(String.valueOf(entry.getKey().asLong()), entry.getValue());
+				worldTag.putString(String.valueOf(entry.getKey().asLong()), entry.getValue());
 			}
 
-			landmarkTag.put(key.getValue().toString(), dimensionTag);
+			landmarkTag.put(key.getValue().toString(), worldTag);
 		}
 
 		tag.put(ID, landmarkTag);
@@ -77,7 +77,7 @@ public class LandmarkTracker extends PersistentState {
 		BlockPos center = world.locateStructure(landmarkType.getFeature(), pos, 300, false);
 
 		return tracker.landmarkNames
-				.computeIfAbsent(world.getDimensionRegistryKey(), key -> new HashMap<>())
+				.computeIfAbsent(world.getRegistryKey(), key -> new HashMap<>())
 				.computeIfAbsent(center, key -> {
 					tracker.markDirty();
 					return NameGenerator.generate(landmarkType.getNameGeneratorId());
