@@ -27,19 +27,6 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 
 public class LandmarkHandler {
-	private static final Identifier LANDMARK_DISCOVERED_PACKET = LandmarkMod.id("packet", "discovered");
-
-	@Environment(EnvType.CLIENT)
-	public static void initClient() {
-		ClientSidePacketRegistry.INSTANCE.register(LANDMARK_DISCOVERED_PACKET, LandmarkHandler::accept);
-	}
-
-	@Environment(EnvType.CLIENT)
-	private static void accept(PacketContext context, PacketByteBuf buf) {
-		String landmarkName = buf.readString();
-		context.getTaskQueue().execute(() -> MinecraftClient.getInstance().inGameHud.setTitles(new LiteralText(landmarkName), null, 10, 70, 20));
-	}
-
 	public static void init() {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
@@ -83,6 +70,6 @@ public class LandmarkHandler {
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 		buf.writeString(LandmarkTracker.getLandmarkName(landmarkType, player.getServerWorld(), player.getBlockPos()));
 
-		ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, LANDMARK_DISCOVERED_PACKET, buf);
+		ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, LandmarkMod.LANDMARK_DISCOVERED_PACKET, buf);
 	}
 }

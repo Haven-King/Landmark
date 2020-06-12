@@ -15,6 +15,9 @@
     ],
     "client": [
       "dev.hephaestus.landmark.impl.LandmarkMod"
+    ],
+    "modmenu": [
+      "dev.hephaestus.landmark.impl.LandmarkModMenuImplementation"
     ]
   },
   "accessWidener": "landmark.accesswidener",

@@ -14,7 +14,7 @@
       "type": "selector",
       "components": [
         {
-          "type": "collector",
+          "type": "selector",
           "components": [
             "Boll",
             "Bor",
