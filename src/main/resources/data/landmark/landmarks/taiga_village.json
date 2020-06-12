@@ -1,0 +1,7 @@
+{
+  "name_generator": "landmark:snowy_village",
+  "location": {
+    "feature": "village",
+    "biome": "minecraft:taiga"
+  }
+}

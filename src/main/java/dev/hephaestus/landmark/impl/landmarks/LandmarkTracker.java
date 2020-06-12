@@ -1,5 +1,6 @@
 package dev.hephaestus.landmark.impl.landmarks;
 
+import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
@@ -54,6 +55,8 @@ public class LandmarkTracker extends PersistentState {
 			landmarkTag.put(key.getValue().toString(), dimensionTag);
 		}
 
+		tag.put(ID, landmarkTag);
+
 		return tag;
 	}
 
@@ -68,11 +71,16 @@ public class LandmarkTracker extends PersistentState {
 		return overworld.getPersistentStateManager().getOrCreate(LandmarkTracker::new, ID);
 	}
 
-	public static String getLandmarkName(Identifier id, ServerWorld world, BlockPos pos) {
+	public static String getLandmarkName(LandmarkType landmarkType, ServerWorld world, BlockPos pos) {
 		LandmarkTracker tracker = get(world);
+
+		BlockPos center = world.locateStructure(landmarkType.getFeature(), pos, 300, false);
 
 		return tracker.landmarkNames.
 				computeIfAbsent(world.getDimensionRegistryKey(), key -> new HashMap<>()).
-				computeIfAbsent(pos, key -> NameGenerator.generate(id));
+				computeIfAbsent(center, key -> {
+					tracker.markDirty();
+					return NameGenerator.generate(landmarkType.getNameGeneratorId());
+				});
 	}
 }

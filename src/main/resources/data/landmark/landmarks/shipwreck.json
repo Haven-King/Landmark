@@ -1,6 +1,6 @@
 {
-  "name": "landmark:shipwreck",
+  "name_generator": "landmark:shipwreck",
   "location": {
-    "feature": "minecraft:shipwreck"
+    "feature": "shipwreck"
   }
 }

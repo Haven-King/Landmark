@@ -2,19 +2,23 @@ package dev.hephaestus.landmark.impl.landmarks;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import dev.hephaestus.landmark.api.LandmarkRegistry;
+import dev.hephaestus.landmark.api.LandmarkType;
+import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
-import dev.hephaestus.landmark.impl.names.NameComponentProviderSerializer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 
 import java.io.InputStreamReader;
@@ -25,7 +29,13 @@ public class LandmarkHandler {
 
 	@Environment(EnvType.CLIENT)
 	public static void initClient() {
-		// TODO: Register landmark received packet
+		ClientSidePacketRegistry.INSTANCE.register(LANDMARK_DISCOVERED_PACKET, LandmarkHandler::accept);
+	}
+
+	@Environment(EnvType.CLIENT)
+	private static void accept(PacketContext context, PacketByteBuf buf) {
+		String landmarkName = buf.readString();
+		context.getTaskQueue().execute(() -> MinecraftClient.getInstance().inGameHud.setTitles(new LiteralText(landmarkName), null, 10, 70, 20));
 	}
 
 	public static void init() {
@@ -40,12 +50,20 @@ public class LandmarkHandler {
 				Collection<Identifier> resources = manager.findResources("landmarks", (string -> string.endsWith(".json")));
 
 				int registered = 0;
-				for (Identifier id : resources) {
+				for (Identifier resource : resources) {
 					JsonParser parser = new JsonParser();
 					try {
-						JsonElement jsonElement = parser.parse(new InputStreamReader(manager.getResource(id).getInputStream()));
+						JsonElement jsonElement = parser.parse(new InputStreamReader(manager.getResource(resource).getInputStream()));
 
-						LandmarkRegistry.register(LandmarkSerializer.deserialize(jsonElement));
+						Identifier id = new Identifier(
+								resource.getNamespace(),
+								resource.getPath().substring(
+										resource.getPath().indexOf("landmarks/") + 10,
+										resource.getPath().indexOf(".json")
+								)
+						);
+
+						LandmarkTypeRegistry.register(LandmarkSerializer.deserialize(id, jsonElement));
 						registered++;
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -57,18 +75,9 @@ public class LandmarkHandler {
 		});
 	}
 
-	public static void trigger(ServerPlayerEntity player) {
-		// TODO: Should be called every second on each ServerPlayerEntity (After each call to Criteria.LOCATION.trigger)
-		for (Identifier id : LandmarkRegistry.getRegistered()) {
-			if (LandmarkRegistry.get(id).test(player)) {
-				dispatch(player, id);
-			}
-		}
-	}
-
-	private static void dispatch(ServerPlayerEntity player, Identifier id) {
+	public static void dispatch(ServerPlayerEntity player, LandmarkType landmarkType) {
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeString(LandmarkTracker.getLandmarkName(id, player.getServerWorld(), player.getBlockPos()));
+		buf.writeString(LandmarkTracker.getLandmarkName(landmarkType, player.getServerWorld(), player.getBlockPos()));
 
 		ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, LANDMARK_DISCOVERED_PACKET, buf);
 	}

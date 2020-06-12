@@ -1,7 +1,7 @@
 {
-  "name": "landmark:generic_village",
+  "name_generator": "landmark:generic_village",
   "location": {
-    "feature": "minecraft:village",
+    "feature": "village",
     "biome": "minecraft:plains"
   }
 }

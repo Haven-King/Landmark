@@ -1,6 +1,6 @@
 {
-  "name": "landmark:bastion",
+  "name_generator": "landmark:end_city",
   "location": {
-    "feature": "minecraft:bastion"
+    "feature": "bastion_remnant"
   }
 }

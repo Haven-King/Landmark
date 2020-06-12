@@ -12,8 +12,12 @@
   "entrypoints": {
     "main": [
       "dev.hephaestus.landmark.impl.LandmarkMod"
+    ],
+    "client": [
+      "dev.hephaestus.landmark.impl.LandmarkMod"
     ]
   },
+  "accessWidener": "landmark.accesswidener",
   "mixins": [
     "landmark.mixins.json"
   ],

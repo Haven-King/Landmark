@@ -3,6 +3,7 @@
   "package": "dev.hephaestus.landmark.impl.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "ServerPlayerEntityMixin"
   ],
   "client": [
   ],

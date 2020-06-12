@@ -1,8 +1,6 @@
 {
-  "name": "landmark:end_city",
-  "conditions": {
-    "location": {
-      "feature": "minecraft:endcity"
-    }
+  "name_generator": "landmark:end_city",
+  "location": {
+    "feature": "endcity"
   }
 }
