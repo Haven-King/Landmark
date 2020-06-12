@@ -1,14 +1,16 @@
 package dev.hephaestus.landmark.impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkHandler;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
+
+import net.minecraft.util.Identifier;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class LandmarkMod implements ModInitializer, ClientModInitializer {
 	public static final String MODID = "landmark";

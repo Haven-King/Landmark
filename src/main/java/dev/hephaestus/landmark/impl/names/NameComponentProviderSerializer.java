@@ -1,6 +1,5 @@
 package dev.hephaestus.landmark.impl.names;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -10,6 +9,7 @@ import dev.hephaestus.landmark.impl.names.provider.types.Collector;
 import dev.hephaestus.landmark.impl.names.provider.types.Literal;
 import dev.hephaestus.landmark.impl.names.provider.types.Reusable;
 import dev.hephaestus.landmark.impl.names.provider.types.Selector;
+
 import net.minecraft.util.Identifier;
 
 public class NameComponentProviderSerializer {
@@ -24,14 +24,14 @@ public class NameComponentProviderSerializer {
 
 		MultiComponentProvider provider;
 		switch (type) {
-			case "selector":
-				provider = new Selector(id);
-				break;
-			case "collector":
-				provider = new Collector(id);
-				break;
-			default:
-				throw new IllegalArgumentException("Name generator in illegal format: invalid type \"" + type + "\"");
+		case "selector":
+			provider = new Selector(id);
+			break;
+		case "collector":
+			provider = new Collector(id);
+			break;
+		default:
+			throw new IllegalArgumentException("Name generator in illegal format: invalid type \"" + type + "\"");
 		}
 
 		return addComponents(provider, jsonObject);
@@ -56,14 +56,14 @@ public class NameComponentProviderSerializer {
 
 			MultiComponentProvider provider;
 			switch (type) {
-				case "selector":
-					provider = new Selector(parent);
-					break;
-				case "collector":
-					provider = new Collector(parent);
-					break;
-				default:
-					throw new IllegalArgumentException("Name generator in illegal format: invalid type \"" + type + "\"");
+			case "selector":
+				provider = new Selector(parent);
+				break;
+			case "collector":
+				provider = new Collector(parent);
+				break;
+			default:
+				throw new IllegalArgumentException("Name generator in illegal format: invalid type \"" + type + "\"");
 			}
 
 			return addComponents(provider, jsonObject);
@@ -80,22 +80,24 @@ public class NameComponentProviderSerializer {
 	private static NameComponentProvider addComponents(MultiComponentProvider multiComponentProvider, JsonObject jsonObject) {
 		if (jsonObject.has("reusable_components")) {
 			JsonElement reusableComponents = jsonObject.get("reusable_components");
+
 			if (!reusableComponents.isJsonArray()) {
 				throw new IllegalArgumentException("Name generator in illegal format: reusable_components must be a JsonArray");
 			}
 
-			((JsonArray)reusableComponents).forEach((element) ->
+			reusableComponents.getAsJsonArray().forEach((element) ->
 					multiComponentProvider.addReusableComponent(deserialize(multiComponentProvider, element))
 			);
 		}
 
 		if (jsonObject.has("components")) {
 			JsonElement components = jsonObject.get("components");
+
 			if (!components.isJsonArray()) {
 				throw new IllegalArgumentException("Name generator in illegal format: components must be a JsonArray");
 			}
 
-			((JsonArray)components).forEach((element) ->
+			components.getAsJsonArray().forEach((element) ->
 					multiComponentProvider.addComponent(deserialize(multiComponentProvider, element))
 			);
 		}

@@ -3,6 +3,7 @@ package dev.hephaestus.landmark.impl.landmarks;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.hephaestus.landmark.api.LandmarkType;
+
 import net.minecraft.predicate.entity.LocationPredicate;
 import net.minecraft.util.Identifier;
 

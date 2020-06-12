@@ -1,18 +1,15 @@
 package dev.hephaestus.landmark.impl.landmarks;
 
+import java.io.InputStreamReader;
+import java.util.Collection;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
@@ -21,8 +18,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 
-import java.io.InputStreamReader;
-import java.util.Collection;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 
 public class LandmarkHandler {
 	private static final Identifier LANDMARK_DISCOVERED_PACKET = LandmarkMod.id("packet", "discovered");
@@ -50,8 +52,10 @@ public class LandmarkHandler {
 				Collection<Identifier> resources = manager.findResources("landmarks", (string -> string.endsWith(".json")));
 
 				int registered = 0;
+
 				for (Identifier resource : resources) {
 					JsonParser parser = new JsonParser();
+
 					try {
 						JsonElement jsonElement = parser.parse(new InputStreamReader(manager.getResource(resource).getInputStream()));
 

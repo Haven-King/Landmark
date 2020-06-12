@@ -1,7 +1,11 @@
 package dev.hephaestus.landmark.impl.landmarks;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -11,9 +15,6 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class LandmarkTracker extends PersistentState {
 	private static final String ID = "landmarks";
@@ -34,8 +35,8 @@ public class LandmarkTracker extends PersistentState {
 
 			for (String blockPos : dimensionTag.getKeys()) {
 				this.landmarkNames.computeIfAbsent(dimension, (k) -> new HashMap<>()).put(
-					BlockPos.fromLong(Long.parseLong(blockPos)),
-					dimensionTag.getString(blockPos)
+						BlockPos.fromLong(Long.parseLong(blockPos)),
+						dimensionTag.getString(blockPos)
 				);
 			}
 		}
@@ -67,7 +68,6 @@ public class LandmarkTracker extends PersistentState {
 			throw new IllegalStateException("Overworld doesn't exist!");
 		}
 
-
 		return overworld.getPersistentStateManager().getOrCreate(LandmarkTracker::new, ID);
 	}
 
@@ -76,9 +76,9 @@ public class LandmarkTracker extends PersistentState {
 
 		BlockPos center = world.locateStructure(landmarkType.getFeature(), pos, 300, false);
 
-		return tracker.landmarkNames.
-				computeIfAbsent(world.getDimensionRegistryKey(), key -> new HashMap<>()).
-				computeIfAbsent(center, key -> {
+		return tracker.landmarkNames
+				.computeIfAbsent(world.getDimensionRegistryKey(), key -> new HashMap<>())
+				.computeIfAbsent(center, key -> {
 					tracker.markDirty();
 					return NameGenerator.generate(landmarkType.getNameGeneratorId());
 				});

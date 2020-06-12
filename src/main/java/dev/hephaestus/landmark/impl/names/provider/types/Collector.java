@@ -1,10 +1,11 @@
 package dev.hephaestus.landmark.impl.names.provider.types;
 
+import java.util.ArrayList;
+
 import dev.hephaestus.landmark.impl.names.provider.MultiComponentProvider;
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
-import net.minecraft.util.Identifier;
 
-import java.util.ArrayList;
+import net.minecraft.util.Identifier;
 
 public class Collector extends MultiComponentProvider {
 	private final ArrayList<NameComponentProvider> components = new ArrayList<>();
@@ -25,6 +26,7 @@ public class Collector extends MultiComponentProvider {
 	@Override
 	public String generateComponent() {
 		StringBuilder result = new StringBuilder();
+
 		for (NameComponentProvider provider : this.components) {
 			result.append(provider.generateComponent());
 		}
