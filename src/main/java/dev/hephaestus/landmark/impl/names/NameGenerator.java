@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.Lifecycle;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
+import org.apache.commons.lang3.text.WordUtils;
 
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -18,7 +19,6 @@ import net.minecraft.util.registry.SimpleRegistry;
 
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import org.apache.commons.lang3.text.WordUtils;
 
 public class NameGenerator {
 	private static final RegistryKey<Registry<NameComponentProvider>> KEY = RegistryKey.ofRegistry(LandmarkMod.id("name", "providers"));

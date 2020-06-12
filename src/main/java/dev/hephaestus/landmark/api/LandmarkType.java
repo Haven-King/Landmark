@@ -1,8 +1,8 @@
 package dev.hephaestus.landmark.api;
 
 import dev.hephaestus.landmark.impl.landmarks.LandmarkLocationPredicate;
+
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.gen.feature.StructureFeature;
 

@@ -14,7 +14,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 
 public class LandmarkTracker extends PersistentState {
 	private static final String ID = "landmarks";

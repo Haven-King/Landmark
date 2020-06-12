@@ -5,13 +5,15 @@ import dev.hephaestus.landmark.impl.landmarks.LandmarkHandler;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
 import me.sargunvohra.mcmods.autoconfig1u.serializer.JanksonConfigSerializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import net.minecraft.util.Identifier;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class LandmarkMod implements ModInitializer, ClientModInitializer {
 	public static final String MODID = "landmark";
