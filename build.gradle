@@ -21,7 +21,6 @@ repositories {
 }
 
 minecraft {
-    accessWidener = file("src/main/resources/landmark.accessWidener")
 }
 
 dependencies {

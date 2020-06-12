@@ -20,7 +20,6 @@
       "dev.hephaestus.landmark.impl.LandmarkModMenuImplementation"
     ]
   },
-  "accessWidener": "landmark.accesswidener",
   "mixins": [
     "landmark.mixins.json"
   ],
