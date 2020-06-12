@@ -13,7 +13,7 @@ import dev.hephaestus.landmark.impl.names.provider.types.Selector;
 import net.minecraft.util.Identifier;
 
 public class NameComponentProviderSerializer {
-	static NameComponentProvider from(Identifier id, JsonElement jsonElement) {
+	static NameComponentProvider deserialize(Identifier id, JsonElement jsonElement) {
 		if (!jsonElement.isJsonObject()) {
 			throw new IllegalArgumentException("Name generator in illegal format: must be a JsonObject");
 		}
@@ -37,7 +37,7 @@ public class NameComponentProviderSerializer {
 		return addComponents(provider, jsonObject);
 	}
 
-	private static NameComponentProvider from(NameComponentProvider parent, JsonElement jsonElement) {
+	private static NameComponentProvider deserialize(NameComponentProvider parent, JsonElement jsonElement) {
 		if (jsonElement.isJsonPrimitive()) {
 			JsonPrimitive primitive = jsonElement.getAsJsonPrimitive();
 
@@ -69,7 +69,7 @@ public class NameComponentProviderSerializer {
 			return addComponents(provider, jsonObject);
 		} else if (jsonElement.isJsonArray()) {
 			Selector selector = new Selector(parent);
-			jsonElement.getAsJsonArray().forEach((element) -> selector.addComponent(from(selector, element)));
+			jsonElement.getAsJsonArray().forEach((element) -> selector.addComponent(deserialize(selector, element)));
 
 			return selector;
 		} else {
@@ -85,7 +85,7 @@ public class NameComponentProviderSerializer {
 			}
 
 			((JsonArray)reusableComponents).forEach((element) ->
-					multiComponentProvider.addReusableComponent(from(multiComponentProvider, element))
+					multiComponentProvider.addReusableComponent(deserialize(multiComponentProvider, element))
 			);
 		}
 
@@ -96,7 +96,7 @@ public class NameComponentProviderSerializer {
 			}
 
 			((JsonArray)components).forEach((element) ->
-					multiComponentProvider.addComponent(from(multiComponentProvider, element))
+					multiComponentProvider.addComponent(deserialize(multiComponentProvider, element))
 			);
 		}
 

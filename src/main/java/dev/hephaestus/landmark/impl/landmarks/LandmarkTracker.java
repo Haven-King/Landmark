@@ -1,4 +1,4 @@
-package dev.hephaestus.landmark.impl;
+package dev.hephaestus.landmark.impl.landmarks;
 
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import net.minecraft.nbt.CompoundTag;

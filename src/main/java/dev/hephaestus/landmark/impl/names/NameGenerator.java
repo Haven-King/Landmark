@@ -38,7 +38,7 @@ public class NameGenerator {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
-				return LandmarkMod.id("landmark", "loader");
+				return LandmarkMod.id("name_generator", "loader");
 			}
 
 			@Override
@@ -46,12 +46,20 @@ public class NameGenerator {
 				Collection<Identifier> resources = manager.findResources("name_generators", (string -> string.endsWith(".json")));
 
 				int registered = 0;
-				for (Identifier id : resources) {
+				for (Identifier resource : resources) {
 					JsonParser parser = new JsonParser();
 					try {
-						JsonElement jsonElement = parser.parse(new InputStreamReader(manager.getResource(id).getInputStream()));
+						JsonElement jsonElement = parser.parse(new InputStreamReader(manager.getResource(resource).getInputStream()));
 
-						register(NameComponentProviderSerializer.from(id, jsonElement));
+						Identifier id = new Identifier(
+							resource.getNamespace(),
+							resource.getPath().substring(
+								resource.getPath().indexOf("name_generators/") + 16,
+								resource.getPath().indexOf(".json")
+							)
+						);
+
+						register(NameComponentProviderSerializer.deserialize(id, jsonElement));
 						registered++;
 					} catch (Exception e) {
 						e.printStackTrace();

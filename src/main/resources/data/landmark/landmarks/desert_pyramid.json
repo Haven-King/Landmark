@@ -1,13 +1,6 @@
 {
   "name": "landmark:desert_pyramid",
-  "criteria": {
-    "village": {
-      "trigger": "minecraft:location",
-      "conditions": {
-        "location": {
-          "feature": "minecraft:desert_pyramid"
-        }
-      }
-    }
+  "location": {
+    "feature": "minecraft:desert_pyramid"
   }
 }

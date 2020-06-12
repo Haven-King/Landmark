@@ -1,14 +1,7 @@
 {
   "name": "landmark:desert_village",
-  "criteria": {
-    "village": {
-      "trigger": "minecraft:location",
-      "conditions": {
-        "location": {
-          "feature": "minecraft:village",
-          "biome": "minecraft:desert"
-        }
-      }
-    }
+  "location": {
+    "feature": "minecraft:village",
+    "biome": "minecraft:desert"
   }
 }

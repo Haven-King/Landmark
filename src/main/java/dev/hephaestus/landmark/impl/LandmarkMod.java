@@ -1,5 +1,6 @@
 package dev.hephaestus.landmark.impl;
 
+import dev.hephaestus.landmark.impl.landmarks.LandmarkHandler;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;

@@ -1,13 +1,6 @@
 {
   "name": "landmark:bastion",
-  "criteria": {
-    "village": {
-      "trigger": "minecraft:location",
-      "conditions": {
-        "location": {
-          "feature": "minecraft:bastion"
-        }
-      }
-    }
+  "location": {
+    "feature": "minecraft:bastion"
   }
 }
