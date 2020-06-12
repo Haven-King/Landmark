@@ -1,0 +1,13 @@
+{
+  "name": "landmark:shipwreck",
+  "criteria": {
+    "village": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "location": {
+          "feature": "minecraft:shipwreck"
+        }
+      }
+    }
+  }
+}

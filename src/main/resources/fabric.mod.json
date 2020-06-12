@@ -11,7 +11,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.hephaestus.landmark.Landmark"
+      "dev.hephaestus.landmark.impl.LandmarkMod"
     ]
   },
   "mixins": [
@@ -19,7 +19,6 @@
   ],
   "depends": {
     "fabricloader": ">=0.8.7+build.201",
-    "fabric": "*",
-    "minecraft": "1.16-pre4"
+    "fabric": "*"
   }
 }

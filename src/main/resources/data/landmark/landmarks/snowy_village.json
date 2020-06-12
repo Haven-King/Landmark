@@ -1,0 +1,17 @@
+{
+  "name": "landmark:snowy_village",
+  "criteria": {
+    "village": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "location": {
+          "feature": "minecraft:village",
+          "biome": [
+            "minecraft:taiga",
+            "minecraft:snowy_tundra"
+          ]
+        }
+      }
+    }
+  }
+}

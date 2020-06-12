@@ -1,0 +1,14 @@
+{
+  "name": "landmark:generic_village",
+  "criteria": {
+    "village": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "location": {
+          "feature": "minecraft:village",
+          "biome": "minecraft:plains"
+        }
+      }
+    }
+  }
+}

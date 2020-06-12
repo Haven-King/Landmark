@@ -1,0 +1,13 @@
+{
+  "name": "landmark:end_city",
+  "criteria": {
+    "village": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "location": {
+          "feature": "minecraft:endcity"
+        }
+      }
+    }
+  }
+}

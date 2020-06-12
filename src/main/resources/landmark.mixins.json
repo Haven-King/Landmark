@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "dev.hephaestus.landmark.mixin",
+  "package": "dev.hephaestus.landmark.impl.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
   ],
