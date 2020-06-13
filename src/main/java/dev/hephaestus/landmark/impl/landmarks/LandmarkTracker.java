@@ -8,6 +8,7 @@ import dev.hephaestus.landmark.impl.names.NameGenerator;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -18,7 +19,7 @@ import net.minecraft.world.World;
 public class LandmarkTracker extends PersistentState {
 	private static final String ID = "landmarks";
 
-	private final HashMap<RegistryKey<World>, HashMap<BlockPos, String>> landmarkNames = new HashMap<>();
+	private final HashMap<RegistryKey<World>, HashMap<BlockPos, Text>> landmarkNames = new HashMap<>();
 
 	public LandmarkTracker() {
 		super(ID);
@@ -35,7 +36,7 @@ public class LandmarkTracker extends PersistentState {
 			for (String blockPos : worldTag.getKeys()) {
 				this.landmarkNames.computeIfAbsent(world, (k) -> new HashMap<>()).put(
 						BlockPos.fromLong(Long.parseLong(blockPos)),
-						worldTag.getString(blockPos)
+						Text.Serializer.fromJson(worldTag.getString(blockPos))
 				);
 			}
 		}
@@ -48,8 +49,8 @@ public class LandmarkTracker extends PersistentState {
 		for (RegistryKey<World> key : landmarkNames.keySet()) {
 			CompoundTag worldTag = new CompoundTag();
 
-			for (Map.Entry<BlockPos, String> entry : landmarkNames.get(key).entrySet()) {
-				worldTag.putString(String.valueOf(entry.getKey().asLong()), entry.getValue());
+			for (Map.Entry<BlockPos, Text> entry : landmarkNames.get(key).entrySet()) {
+				worldTag.putString(String.valueOf(entry.getKey().asLong()), Text.Serializer.toJson(entry.getValue()));
 			}
 
 			landmarkTag.put(key.getValue().toString(), worldTag);
@@ -70,7 +71,7 @@ public class LandmarkTracker extends PersistentState {
 		return overworld.getPersistentStateManager().getOrCreate(LandmarkTracker::new, ID);
 	}
 
-	public static String getLandmarkName(LandmarkType landmarkType, ServerWorld world, BlockPos pos) {
+	public static Text getLandmarkName(LandmarkType landmarkType, ServerWorld world, BlockPos pos) {
 		LandmarkTracker tracker = get(world);
 
 		BlockPos center = world.locateStructure(landmarkType.getFeature(), pos, 300, false);

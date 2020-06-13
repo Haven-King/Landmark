@@ -64,12 +64,12 @@ public class LandmarkNameHandler extends DrawableHelper {
 
 	@Environment(EnvType.CLIENT)
 	private static void accept(PacketContext context, PacketByteBuf buf) {
-		String landmarkName = buf.readString();
+		Text landmarkName = buf.readText();
 
 		// It's possible using the task queue here is unnecessary, but I'm not gonna mess around and find out
 		context.getTaskQueue().execute(() -> {
 			NAME_DISPLAY_TOTAL_TICKS = duration() * 20;
-			NAME = new LiteralText(landmarkName);
+			NAME = landmarkName;
 		});
 	}
 }

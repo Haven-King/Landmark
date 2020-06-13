@@ -1,6 +1,7 @@
 package dev.hephaestus.landmark.impl.names.provider.types;
 
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
+import net.minecraft.text.MutableText;
 
 public class Reusable extends NameComponentProvider {
 	private final int reusableComponentIndex;
@@ -11,7 +12,7 @@ public class Reusable extends NameComponentProvider {
 	}
 
 	@Override
-	public String generateComponent() {
+	public MutableText generateComponent() {
 		return generateComponent(this.reusableComponentIndex);
 	}
 }

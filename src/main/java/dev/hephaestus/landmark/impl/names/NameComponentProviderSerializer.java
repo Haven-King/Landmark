@@ -10,6 +10,8 @@ import dev.hephaestus.landmark.impl.names.provider.types.Literal;
 import dev.hephaestus.landmark.impl.names.provider.types.Reusable;
 import dev.hephaestus.landmark.impl.names.provider.types.Selector;
 
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 public class NameComponentProviderSerializer {
@@ -18,9 +20,15 @@ public class NameComponentProviderSerializer {
 			throw new IllegalArgumentException("Name generator in illegal format: must be a JsonObject");
 		}
 
+
 		JsonObject jsonObject = jsonElement.getAsJsonObject();
 
 		String type = jsonObject.get("type").getAsString();
+
+		TextColor color = TextColor.fromFormatting(Formatting.WHITE);
+		if (jsonObject.has("color")) {
+			color = TextColor.parse(jsonObject.get("color").getAsString());
+		}
 
 		MultiComponentProvider provider;
 		switch (type) {
@@ -34,7 +42,7 @@ public class NameComponentProviderSerializer {
 			throw new IllegalArgumentException("Name generator in illegal format: invalid type \"" + type + "\"");
 		}
 
-		return addComponents(provider, jsonObject);
+		return addComponents((MultiComponentProvider) provider.withColor(color), jsonObject);
 	}
 
 	private static NameComponentProvider deserialize(NameComponentProvider parent, JsonElement jsonElement) {

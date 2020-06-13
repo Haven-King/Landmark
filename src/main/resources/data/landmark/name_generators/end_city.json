@@ -1,5 +1,6 @@
 {
   "type": "selector",
+  "color": "#d791ea",
   "reusable_components": [
     ["", "", "", "", "ch", "g", "j", "k", "kh", "m", "n", "ph", "t", "v", "z"],
     ["a", "e", "i", "o", "u", "a", "a", "a", "u", "u", "u", "o", "o", "a", "e", "i", "o", "u", "a", "a", "a", "u", "u", "u", "o", "o", "a", "e", "i", "o", "u", "a", "a", "a", "u", "u", "u", "o", "o", "a", "e", "i", "o", "u", "a", "a", "a", "u", "u", "u", "o", "o", "a", "e", "i", "o", "u", "a", "a", "a", "u", "u", "u", "o", "o", "au", "ou", "uu", "oo", "aa", "ao", "ai"],

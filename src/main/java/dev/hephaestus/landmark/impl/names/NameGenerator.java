@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.Lifecycle;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
+import net.minecraft.text.Text;
 import org.apache.commons.lang3.text.WordUtils;
 
 import net.minecraft.resource.ResourceManager;
@@ -22,7 +23,7 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 
 public class NameGenerator {
 	private static final RegistryKey<Registry<NameComponentProvider>> KEY = RegistryKey.ofRegistry(LandmarkMod.id("name", "providers"));
-	private static final SimpleRegistry<NameComponentProvider> REGISTRY = new SimpleRegistry<>(KEY, Lifecycle.stable());
+	private static SimpleRegistry<NameComponentProvider> REGISTRY = new SimpleRegistry<>(KEY, Lifecycle.stable());
 
 	public static void register(NameComponentProvider provider) {
 		if (!REGISTRY.containsId(provider.getId())) {
@@ -30,14 +31,14 @@ public class NameGenerator {
 		}
 	}
 
-	public static String generate(Identifier id) {
+	public static Text generate(Identifier id) {
 		NameComponentProvider provider = REGISTRY.get(id);
 
 		if (provider == null) {
 			throw new IllegalArgumentException("Name provider not registered for \"" + id.toString() + "\"");
 		}
 
-		return WordUtils.capitalize(provider.generateComponent());
+		return provider.generateComponent();
 	}
 
 	public static void init() {
@@ -49,6 +50,7 @@ public class NameGenerator {
 
 			@Override
 			public void apply(ResourceManager manager) {
+				REGISTRY = new SimpleRegistry<>(KEY, Lifecycle.stable());
 				Collection<Identifier> resources = manager.findResources("name_generators", (string -> string.endsWith(".json")));
 
 				int registered = 0;

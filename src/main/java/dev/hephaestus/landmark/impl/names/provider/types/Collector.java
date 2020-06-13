@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import dev.hephaestus.landmark.impl.names.provider.MultiComponentProvider;
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
 
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.util.Identifier;
 
 public class Collector extends MultiComponentProvider {
@@ -24,13 +26,13 @@ public class Collector extends MultiComponentProvider {
 	}
 
 	@Override
-	public String generateComponent() {
-		StringBuilder result = new StringBuilder();
+	public MutableText generateComponent() {
+		MutableText result = new LiteralText("");
 
 		for (NameComponentProvider provider : this.components) {
 			result.append(provider.generateComponent());
 		}
 
-		return result.toString();
+		return result;
 	}
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import dev.hephaestus.landmark.impl.names.provider.MultiComponentProvider;
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
 
+import net.minecraft.text.MutableText;
 import net.minecraft.util.Identifier;
 
 public class Selector extends MultiComponentProvider {
@@ -24,7 +25,7 @@ public class Selector extends MultiComponentProvider {
 	}
 
 	@Override
-	public String generateComponent() {
+	public MutableText generateComponent() {
 		return this.components.get((int) (Math.random() * components.size())).generateComponent();
 	}
 }
