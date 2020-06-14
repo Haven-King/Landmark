@@ -6,6 +6,7 @@
     "ServerPlayerEntityMixin"
   ],
   "client": [
+    "client.WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

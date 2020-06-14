@@ -58,8 +58,9 @@ public class LandmarkNameHandler extends DrawableHelper {
 
 			matrices.pop();
 
-			--NAME_DISPLAY_TOTAL_TICKS;
 		}
+
+		--NAME_DISPLAY_TOTAL_TICKS;
 	}
 
 	@Environment(EnvType.CLIENT)
@@ -68,8 +69,10 @@ public class LandmarkNameHandler extends DrawableHelper {
 
 		// It's possible using the task queue here is unnecessary, but I'm not gonna mess around and find out
 		context.getTaskQueue().execute(() -> {
-			NAME_DISPLAY_TOTAL_TICKS = duration() * 20;
-			NAME = landmarkName;
+			if (NAME_DISPLAY_TOTAL_TICKS <= 0) {
+				NAME_DISPLAY_TOTAL_TICKS = duration() * 20;
+				NAME = landmarkName;
+			}
 		});
 	}
 }

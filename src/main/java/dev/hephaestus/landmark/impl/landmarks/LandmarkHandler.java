@@ -62,7 +62,7 @@ public class LandmarkHandler {
 
 	public static void dispatch(ServerPlayerEntity player, LandmarkType landmarkType) {
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeText(LandmarkTracker.getLandmarkName(landmarkType, player.getServerWorld(), player.getBlockPos()));
+		buf.writeText(LandmarkNameTracker.getLandmarkName(landmarkType, player.getServerWorld(), player.getBlockPos()));
 
 		ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, LandmarkMod.LANDMARK_DISCOVERED_PACKET, buf);
 	}
