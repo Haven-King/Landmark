@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class CustomLandmarkTracker extends SyncedState {
 //    public static Identifier CUSTOM_LANDMARKS_UPDATE = LandmarkMod.id("custom", "update");
 //

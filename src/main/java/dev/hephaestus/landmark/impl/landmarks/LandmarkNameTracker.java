@@ -15,6 +15,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class LandmarkNameTracker extends SyncedState {
 //	public static Identifier LANDMARK_NAMES_UPDATE = LandmarkMod.id("names", "update");
 //	private static final String ID = "landmarks";
