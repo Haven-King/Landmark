@@ -31,7 +31,7 @@ public class DeedEditScreen extends Screen {
     private TextColor textColor;
     private TextFieldWidget nameField;
     private TextFieldWidget colorField;
-    private ButtonWidget finalizeButton;
+//    private ButtonWidget finalizeButton;
     private ButtonWidget saveButton;
 
     public DeedEditScreen(ItemStack stack, Hand hand) {
@@ -67,7 +67,7 @@ public class DeedEditScreen extends Screen {
             this.nameField.setText(this.text.asString());
             this.nameField.setEditableColor(this.textColor.getRgb());
 
-            int subWidth = (width / 4) - 2;
+//            int subWidth = (width / 4) - 2;
 
             this.colorField = new TextFieldWidget(this.client.textRenderer, (3 * width / 4) + 4, height / 2 - 10, width / 6, 20, new LiteralText(""));
 
@@ -84,7 +84,7 @@ public class DeedEditScreen extends Screen {
                 }
             });
 
-            this.saveButton = new ButtonWidget(width / 4, height / 2 + 14, subWidth, 20, new TranslatableText("deeds.landmark.save"), action -> {
+            this.saveButton = new ButtonWidget(width / 4, height / 2 + 14, width / 2, 20, new TranslatableText("deeds.landmark.save"), action -> {
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
                 buf.writeUuid(this.deedId);
                 buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
@@ -93,19 +93,19 @@ public class DeedEditScreen extends Screen {
                 client.openScreen(null);
             });
 
-            this.finalizeButton = new ButtonWidget(width / 4 + subWidth + 4, height / 2 + 14, subWidth, 20, new TranslatableText("deeds.landmark.finalize"), action -> {
-                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                buf.writeUuid(this.deedId);
-                buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
-                buf.writeEnumConstant(this.hand);
-                ClientSidePacketRegistry.INSTANCE.sendToServer(DeedItem.DEED_FINALIZE_PACKET_ID, buf);
-                client.openScreen(null);
-            });
+//            this.finalizeButton = new ButtonWidget(width / 4 + subWidth + 4, height / 2 + 14, subWidth, 20, new TranslatableText("deeds.landmark.finalize"), action -> {
+//                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+//                buf.writeUuid(this.deedId);
+//                buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
+//                buf.writeEnumConstant(this.hand);
+//                ClientSidePacketRegistry.INSTANCE.sendToServer(DeedItem.DEED_FINALIZE_PACKET_ID, buf);
+//                client.openScreen(null);
+//            });
 
             this.children.add(this.nameField);
             this.children.add(this.colorField);
             this.children.add(this.saveButton);
-            this.children.add(this.finalizeButton);
+//            this.children.add(this.finalizeButton);
         }
     }
 
@@ -115,7 +115,7 @@ public class DeedEditScreen extends Screen {
         this.nameField.render(matrices, mouseX, mouseY, delta);
         this.colorField.render(matrices, mouseX, mouseY, delta);
         this.saveButton.render(matrices, mouseX, mouseY, delta);
-        this.finalizeButton.render(matrices, mouseX, mouseY, delta);
+//        this.finalizeButton.render(matrices, mouseX, mouseY, delta);
         super.render(matrices, mouseX, mouseY, delta);
     }
 

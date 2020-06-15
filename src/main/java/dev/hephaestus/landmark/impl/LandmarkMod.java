@@ -4,7 +4,9 @@ import dev.hephaestus.landmark.impl.client.DeedBuilderRenderer;
 import dev.hephaestus.landmark.impl.client.DeedEditScreen;
 import dev.hephaestus.landmark.impl.client.LandmarkNameHandler;
 import dev.hephaestus.landmark.impl.item.DeedItem;
+import dev.hephaestus.landmark.impl.landmarks.CustomLandmarkTracker;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkHandler;
+import dev.hephaestus.landmark.impl.landmarks.LandmarkNameTracker;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import dev.hephaestus.landmark.impl.util.DeedRegistry;
 import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
@@ -49,7 +51,7 @@ public class LandmarkMod implements ModInitializer, ClientModInitializer {
 
 		ServerSidePacketRegistry.INSTANCE.register(DeedRegistry.DEED_REQUEST_PACKET_REQUEST, DeedRegistry::response);
 		ServerSidePacketRegistry.INSTANCE.register(DeedItem.DEED_SAVE_PACKET_ID, DeedItem::saveName);
-		ServerSidePacketRegistry.INSTANCE.register(DeedItem.DEED_FINALIZE_PACKET_ID, DeedItem::finalize);
+		ServerSidePacketRegistry.INSTANCE.register(DeedItem.DEED_FINALIZE_PACKET_ID, DeedItem::setName);
 
 		Registry.register(Registry.ITEM, id("common_deed"), COMMON_DEED);
 		Registry.register(Registry.ITEM, id("uncommon_deed"), UNCOMMON_DEED);
@@ -66,5 +68,7 @@ public class LandmarkMod implements ModInitializer, ClientModInitializer {
 
 		ClientSidePacketRegistry.INSTANCE.register(DeedRegistry.DEED_REQUEST_PACKET_RESPONSE, DeedBuilderRenderer::apply);
 		ClientSidePacketRegistry.INSTANCE.register(DeedItem.DEED_OPEN_EDIT_SCREEN, DeedEditScreen::open);
+		ClientSidePacketRegistry.INSTANCE.register(LandmarkNameTracker.LANDMARK_NAMES_UPDATE, DeedBuilderRenderer::captureNames);
+		ClientSidePacketRegistry.INSTANCE.register(CustomLandmarkTracker.CUSTOM_LANDMARKS_UPDATE, DeedBuilderRenderer::captureBoxes);
 	}
 }

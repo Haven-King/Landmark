@@ -4,6 +4,7 @@ import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.client.DeedBuilderRenderer;
 import dev.hephaestus.landmark.impl.landmarks.CustomLandmarkTracker;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkNameTracker;
+import dev.hephaestus.landmark.impl.landmarks.LandmarkTracker;
 import dev.hephaestus.landmark.impl.util.DeedRegistry;
 import dev.hephaestus.landmark.impl.util.Profiler;
 import io.netty.buffer.Unpooled;
@@ -217,7 +218,7 @@ public class DeedItem extends Item {
         });
     }
 
-    public static void finalize(PacketContext context, PacketByteBuf buf) {
+    public static void setName(PacketContext context, PacketByteBuf buf) {
         UUID id = buf.readUuid();
         Text name = buf.readText();
         Hand hand = buf.readEnumConstant(Hand.class);
@@ -227,7 +228,7 @@ public class DeedItem extends Item {
         context.getTaskQueue().execute(() -> {
             VoxelShape shape = DeedRegistry.get(world).remove(id);
             BlockPos pos = new BlockPos(shape.getBoundingBox().getCenter());
-            boolean success = LandmarkNameTracker.addCustomLandmark(world, pos, name);
+            boolean success = LandmarkTracker.addCustomLandmark(world, pos, name);
             CustomLandmarkTracker.add(world, pos, shape);
             player.setStackInHand(hand, ItemStack.EMPTY);
         });
