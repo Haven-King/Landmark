@@ -1,18 +1,18 @@
 package dev.hephaestus.landmark.impl.client;
 
-import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.item.DeedItem;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -20,11 +20,10 @@ import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 
 import java.util.UUID;
 
-public class FinalizeDeedScreen extends Screen {
+public class DeedEditScreen extends Screen {
     private final Text text;
     private final UUID deedId;
     private final Hand hand;
@@ -35,7 +34,7 @@ public class FinalizeDeedScreen extends Screen {
     private ButtonWidget finalizeButton;
     private ButtonWidget saveButton;
 
-    public FinalizeDeedScreen(ItemStack stack, Hand hand) {
+    public DeedEditScreen(ItemStack stack, Hand hand) {
         super(new TranslatableText("deed.landmark.finalize"));
         Text text;
 
@@ -123,5 +122,12 @@ public class FinalizeDeedScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    public static void open(PacketContext context, PacketByteBuf packetByteBuf) {
+        PlayerEntity playerEntity = context.getPlayer();
+        Hand hand = packetByteBuf.readEnumConstant(Hand.class);
+
+        context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(new DeedEditScreen(playerEntity.getStackInHand(hand), hand)));
     }
 }

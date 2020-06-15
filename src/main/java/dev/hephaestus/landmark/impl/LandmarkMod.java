@@ -1,6 +1,7 @@
 package dev.hephaestus.landmark.impl;
 
 import dev.hephaestus.landmark.impl.client.DeedBuilderRenderer;
+import dev.hephaestus.landmark.impl.client.DeedEditScreen;
 import dev.hephaestus.landmark.impl.client.LandmarkNameHandler;
 import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkHandler;
@@ -64,5 +65,6 @@ public class LandmarkMod implements ModInitializer, ClientModInitializer {
 		CONFIG = AutoConfig.getConfigHolder(LandmarkConfig.class).getConfig();
 
 		ClientSidePacketRegistry.INSTANCE.register(DeedRegistry.DEED_REQUEST_PACKET_RESPONSE, DeedBuilderRenderer::apply);
+		ClientSidePacketRegistry.INSTANCE.register(DeedItem.DEED_OPEN_EDIT_SCREEN, DeedEditScreen::open);
 	}
 }

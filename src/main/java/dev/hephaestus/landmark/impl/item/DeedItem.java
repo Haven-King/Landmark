@@ -2,16 +2,16 @@ package dev.hephaestus.landmark.impl.item;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.client.DeedBuilderRenderer;
-import dev.hephaestus.landmark.impl.client.FinalizeDeedScreen;
 import dev.hephaestus.landmark.impl.landmarks.CustomLandmarkTracker;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkNameTracker;
 import dev.hephaestus.landmark.impl.util.DeedRegistry;
 import dev.hephaestus.landmark.impl.util.Profiler;
+import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.PacketContext;
-import net.minecraft.client.MinecraftClient;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -40,6 +40,7 @@ import java.util.*;
 public class DeedItem extends Item {
     public static final Identifier DEED_SAVE_PACKET_ID = LandmarkMod.id("deed_screen", "save");
     public static final Identifier DEED_FINALIZE_PACKET_ID = LandmarkMod.id("deed_screen", "finalize");
+    public static final Identifier DEED_OPEN_EDIT_SCREEN = LandmarkMod.id("deed_screen", "open");
 
     private final long maxVolume;
 
@@ -179,12 +180,12 @@ public class DeedItem extends Item {
         super.appendTooltip(stack, world, tooltip, context);
     }
 
-    @SuppressWarnings({"NewExpressionSideOnly", "MethodCallSideOnly"})
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         CompoundTag tag = user.getStackInHand(hand).getTag();
-        if (world.isClient && tag != null && tag.contains("deed_id")) {
-            MinecraftClient.getInstance().openScreen(new FinalizeDeedScreen(user.getStackInHand(hand), hand));
+        if (!world.isClient && tag != null && tag.contains("deed_id")) {
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeEnumConstant(hand);
+            ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, DEED_OPEN_EDIT_SCREEN, buf);
         }
 
         return super.use(world, user, hand);
