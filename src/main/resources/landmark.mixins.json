@@ -3,7 +3,9 @@
   "package": "dev.hephaestus.landmark.impl.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "ServerPlayerEntityMixin"
+    "entity.ServerPlayerEntityMixin",
+    "server.world.ThreadedAnvilChunkStorageMixin",
+    "structure.StructureStartMixin"
   ],
   "client": [
     "client.WorldRendererMixin"
