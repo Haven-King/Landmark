@@ -1,18 +1,18 @@
 package dev.hephaestus.landmark.impl.client;
 
-import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.item.DeedItem;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -20,11 +20,10 @@ import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 
 import java.util.UUID;
 
-public class FinalizeDeedScreen extends Screen {
+public class DeedEditScreen extends Screen {
     private final Text text;
     private final UUID deedId;
     private final Hand hand;
@@ -32,10 +31,10 @@ public class FinalizeDeedScreen extends Screen {
     private TextColor textColor;
     private TextFieldWidget nameField;
     private TextFieldWidget colorField;
-    private ButtonWidget finalizeButton;
+//    private ButtonWidget finalizeButton;
     private ButtonWidget saveButton;
 
-    public FinalizeDeedScreen(ItemStack stack, Hand hand) {
+    public DeedEditScreen(ItemStack stack, Hand hand) {
         super(new TranslatableText("deed.landmark.finalize"));
         Text text;
 
@@ -68,7 +67,7 @@ public class FinalizeDeedScreen extends Screen {
             this.nameField.setText(this.text.asString());
             this.nameField.setEditableColor(this.textColor.getRgb());
 
-            int subWidth = (width / 4) - 2;
+//            int subWidth = (width / 4) - 2;
 
             this.colorField = new TextFieldWidget(this.client.textRenderer, (3 * width / 4) + 4, height / 2 - 10, width / 6, 20, new LiteralText(""));
 
@@ -85,7 +84,7 @@ public class FinalizeDeedScreen extends Screen {
                 }
             });
 
-            this.saveButton = new ButtonWidget(width / 4, height / 2 + 14, subWidth, 20, new TranslatableText("deeds.landmark.save"), action -> {
+            this.saveButton = new ButtonWidget(width / 4, height / 2 + 14, width / 2, 20, new TranslatableText("deeds.landmark.save"), action -> {
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
                 buf.writeUuid(this.deedId);
                 buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
@@ -94,19 +93,19 @@ public class FinalizeDeedScreen extends Screen {
                 client.openScreen(null);
             });
 
-            this.finalizeButton = new ButtonWidget(width / 4 + subWidth + 4, height / 2 + 14, subWidth, 20, new TranslatableText("deeds.landmark.finalize"), action -> {
-                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                buf.writeUuid(this.deedId);
-                buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
-                buf.writeEnumConstant(this.hand);
-                ClientSidePacketRegistry.INSTANCE.sendToServer(DeedItem.DEED_FINALIZE_PACKET_ID, buf);
-                client.openScreen(null);
-            });
+//            this.finalizeButton = new ButtonWidget(width / 4 + subWidth + 4, height / 2 + 14, subWidth, 20, new TranslatableText("deeds.landmark.finalize"), action -> {
+//                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+//                buf.writeUuid(this.deedId);
+//                buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
+//                buf.writeEnumConstant(this.hand);
+//                ClientSidePacketRegistry.INSTANCE.sendToServer(DeedItem.DEED_FINALIZE_PACKET_ID, buf);
+//                client.openScreen(null);
+//            });
 
             this.children.add(this.nameField);
             this.children.add(this.colorField);
             this.children.add(this.saveButton);
-            this.children.add(this.finalizeButton);
+//            this.children.add(this.finalizeButton);
         }
     }
 
@@ -116,12 +115,19 @@ public class FinalizeDeedScreen extends Screen {
         this.nameField.render(matrices, mouseX, mouseY, delta);
         this.colorField.render(matrices, mouseX, mouseY, delta);
         this.saveButton.render(matrices, mouseX, mouseY, delta);
-        this.finalizeButton.render(matrices, mouseX, mouseY, delta);
+//        this.finalizeButton.render(matrices, mouseX, mouseY, delta);
         super.render(matrices, mouseX, mouseY, delta);
     }
 
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    public static void open(PacketContext context, PacketByteBuf packetByteBuf) {
+        PlayerEntity playerEntity = context.getPlayer();
+        Hand hand = packetByteBuf.readEnumConstant(Hand.class);
+
+        context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(new DeedEditScreen(playerEntity.getStackInHand(hand), hand)));
     }
 }

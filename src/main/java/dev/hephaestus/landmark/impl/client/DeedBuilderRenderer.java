@@ -1,6 +1,8 @@
 package dev.hephaestus.landmark.impl.client;
 
 import dev.hephaestus.landmark.impl.item.DeedItem;
+import dev.hephaestus.landmark.impl.landmarks.CustomLandmarkTracker;
+import dev.hephaestus.landmark.impl.landmarks.LandmarkNameTracker;
 import dev.hephaestus.landmark.impl.util.DeedRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -14,6 +16,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -21,6 +25,9 @@ import net.minecraft.util.shape.VoxelShapes;
 import java.util.UUID;
 
 public class DeedBuilderRenderer {
+    private static CustomLandmarkTracker customLandmarkTracker;
+    private static LandmarkNameTracker landmarkNameTracker;
+
     private static UUID ID;
     private static VoxelShape SHAPE;
     private static float RED = 1F;
@@ -46,15 +53,27 @@ public class DeedBuilderRenderer {
                 }
             }
 
-            if (SHAPE != null && ID != null && tag != null && ID.equals(tag.getUuid("deed_id"))) {
-                matrices.push();
-                matrices.translate(-camPos.x, -camPos.y, -camPos.z);
+            matrices.push();
+            matrices.translate(-camPos.x, -camPos.y, -camPos.z);
+            VertexConsumer vertexConsumer = bufferBuilders.getEffectVertexConsumers().getBuffer(RenderLayer.getLines());
 
-                VertexConsumer vertexConsumer = bufferBuilders.getEffectVertexConsumers().getBuffer(RenderLayer.getLines());
-                SHAPE.forEachBox((x1, y1, z1, x2, y2, z2) -> WorldRenderer.drawBox(matrices, vertexConsumer, x1, y1, z1, x2, y2, z2, RED, GREEN, BLUE, 1F));
+            if (customLandmarkTracker != null && landmarkNameTracker != null) {
+                for (BlockPos pos : customLandmarkTracker.getAll()) {
+                    TextColor textColor = landmarkNameTracker.getLandmarkName(pos).getStyle().getColor();
+                    int color = textColor == null ? 0xFFFFFFFF : textColor.getRgb();
+                    float red = ((float) ((color >>> 16) & 0xFF)) / 255F;
+                    float green = ((float) ((color >>> 8) & 0xFF)) / 255F;
+                    float blue = ((float) (color & 0xFF)) / 255F;
 
-                matrices.pop();
+                    customLandmarkTracker.get(pos).forEachBox((x1, y1, z1, x2, y2, z2) -> WorldRenderer.drawBox(matrices, vertexConsumer, x1, y1, z1, x2, y2, z2, red, green, blue, 0.5F));
+                }
             }
+
+            if (SHAPE != null && ID != null && tag != null && ID.equals(tag.getUuid("deed_id"))) {
+                SHAPE.forEachBox((x1, y1, z1, x2, y2, z2) -> WorldRenderer.drawBox(matrices, vertexConsumer, x1, y1, z1, x2, y2, z2, RED, GREEN, BLUE, 1F));
+            }
+
+            matrices.pop();
         }
     }
 
@@ -84,5 +103,21 @@ public class DeedBuilderRenderer {
         RED = 1F;
         GREEN = 1F;
         BLUE = 1F;
+    }
+
+    public static void captureBoxes(PacketContext context, PacketByteBuf buf) {
+        CompoundTag compoundTag = buf.readCompoundTag();
+        if (compoundTag != null) {
+            customLandmarkTracker = new CustomLandmarkTracker(null);
+            customLandmarkTracker.fromTag(compoundTag);
+        }
+    }
+
+    public static void captureNames(PacketContext context, PacketByteBuf buf) {
+        CompoundTag compoundTag = buf.readCompoundTag();
+        if (compoundTag != null) {
+            landmarkNameTracker = new LandmarkNameTracker(null);
+            landmarkNameTracker.fromTag(compoundTag);
+        }
     }
 }
