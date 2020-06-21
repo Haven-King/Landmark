@@ -2,6 +2,10 @@ package dev.hephaestus.landmark.impl.util;
 
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -9,23 +13,64 @@ import com.google.gson.JsonParser;
 import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
-import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
-import dev.hephaestus.landmark.impl.landmarks.Landmark;
-import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
-import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
-import io.netty.buffer.Unpooled;
 
+import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
+import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
+import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 
 public class LandmarkHandler {
+	private final ServerPlayerEntity playerEntity;
+	private final ConcurrentHashMap<UUID, Integer> landmarkStatuses = new ConcurrentHashMap<>();
+
+	public LandmarkHandler(ServerPlayerEntity playerEntity) {
+		this.playerEntity = playerEntity;
+	}
+
+	public void tick() {
+		LandmarkChunkComponent container = LandmarkMod.CHUNK_COMPONENT.get(this.playerEntity.getServerWorld().getChunk(this.playerEntity.getBlockPos()));
+
+		double x = this.playerEntity.getPos().x, y = this.playerEntity.getPos().y, z = this.playerEntity.getPos().z;
+
+		UUID landmark = null;
+		HashMap<UUID, Boolean> landmarks = new HashMap<>();
+		for (LandmarkSection section : container.getSections()) {
+			boolean bl = section.contains(x, y, z);
+			landmarks.put(section.parent, landmarks.getOrDefault(section.parent, false) || bl);
+			if (bl && landmark == null && !this.landmarkStatuses.containsKey(section.parent)) {
+				landmark = section.parent;
+				this.landmarkStatuses.put(section.parent, 200);
+			}
+		}
+
+		for (Map.Entry<UUID, Integer> entry : this.landmarkStatuses.entrySet()) {
+			if (!landmarks.getOrDefault(entry.getKey(), false)) {
+				int i = entry.getValue() - 1;
+				if (i <= 0) {
+					this.landmarkStatuses.remove(entry.getKey());
+				} else {
+					this.landmarkStatuses.put(entry.getKey(), i);
+				}
+			}
+		}
+
+		if (landmark != null) {
+			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+			buf.writeText(LandmarkTrackingComponent.of(this.playerEntity.getServerWorld()).getName(landmark));
+			ServerSidePacketRegistry.INSTANCE.sendToPlayer(this.playerEntity, LandmarkMod.LANDMARK_DISCOVERED_PACKET, buf);
+			this.landmarkStatuses.put(landmark, 200);
+		}
+	}
+
 	public static void init() {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
@@ -67,16 +112,5 @@ public class LandmarkHandler {
 				LandmarkMod.LOG.info("Registered " + registered + " landmarks");
 			}
 		});
-	}
-
-	public static void dispatch(ServerPlayerEntity player, LandmarkType landmarkType) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		Landmark landmark = new GeneratedLandmark(player.getServerWorld(), landmarkType);
-		LandmarkTrackingComponent.add(player.getServerWorld(), landmark);
-
-		// TODO: Have generated landmarks saved in the same way as custom ones.
-		buf.writeText(landmark.getName());
-
-		ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, LandmarkMod.LANDMARK_DISCOVERED_PACKET, buf);
 	}
 }

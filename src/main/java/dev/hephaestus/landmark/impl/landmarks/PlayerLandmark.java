@@ -23,7 +23,11 @@ public class PlayerLandmark extends Landmark {
     private boolean built = false;
 
     public PlayerLandmark(World world) {
-        super(world, UUID.randomUUID(), LiteralText.EMPTY);
+        this(world, LiteralText.EMPTY);
+    }
+
+    public PlayerLandmark(World world, Text name) {
+        super(world, UUID.randomUUID(), name);
     }
 
     @Override
@@ -113,31 +117,33 @@ public class PlayerLandmark extends Landmark {
     }
 
     public void makeSections(ServerWorld world) {
-        for (ChunkPos pos : chunks) {
-            LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
-            component.remove(this);
-        }
-
-        this.shape.forEachBox(((minX, minY, minZ, maxX, maxY, maxZ) -> {
-            LandmarkSection section = new LandmarkSection(this.getId(), minX, minY, minZ, maxX, maxY, maxZ);
-            Collection<ChunkPos> chunks = section.getChunks();
-            this.chunks.addAll(chunks);
-
+        if (this.shape != null) {
             for (ChunkPos pos : chunks) {
                 LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
-                component.add(section);
+                component.remove(this);
             }
-        }));
 
-        LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(world);
+            this.shape.forEachBox(((minX, minY, minZ, maxX, maxY, maxZ) -> {
+                LandmarkSection section = new LandmarkSection(this.getId(), minX, minY, minZ, maxX, maxY, maxZ);
+                Collection<ChunkPos> chunks = section.getChunks();
+                this.chunks.addAll(chunks);
 
-        for (ChunkPos pos : chunks) {
-            tracker.put(pos, this);
-            LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
-            component.sync();
+                for (ChunkPos pos : chunks) {
+                    LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
+                    component.add(section);
+                }
+            }));
+
+            LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(world);
+
+            for (ChunkPos pos : chunks) {
+                tracker.put(pos, this);
+                LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
+                component.sync();
+            }
+
+            tracker.sync();
         }
-
-        tracker.sync();
 
         this.built = true;
     }

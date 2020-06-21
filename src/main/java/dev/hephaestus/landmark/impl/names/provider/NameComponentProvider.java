@@ -2,6 +2,7 @@ package dev.hephaestus.landmark.impl.names.provider;
 
 import java.util.ArrayList;
 
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
@@ -43,8 +44,12 @@ public abstract class NameComponentProvider {
 			throw new IllegalArgumentException("Invalid reusableComponent number \"" + reusableComponentIndex + "\" in " + this.id.toString());
 		}
 
-		return this.reusableComponents.get(reusableComponentIndex).generateComponent().styled((style) -> style.withColor(this.color));
+		return this.reusableComponents.get(reusableComponentIndex).generateComponent();
 	}
 
 	public abstract MutableText generateComponent();
+
+	public TextColor getColor() {
+		return this.color;
+	}
 }

@@ -8,6 +8,8 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.Lifecycle;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -31,14 +33,14 @@ public class NameGenerator {
 		}
 	}
 
-	public static Text generate(Identifier id) {
+	public static MutableText generate(Identifier id) {
 		NameComponentProvider provider = REGISTRY.get(id);
 
 		if (provider == null) {
 			throw new IllegalArgumentException("Name provider not registered for \"" + id.toString() + "\"");
 		}
 
-		return provider.generateComponent();
+		return new LiteralText(provider.generateComponent().getString()).styled(style -> style.withColor(provider.getColor()));
 	}
 
 	public static void init() {

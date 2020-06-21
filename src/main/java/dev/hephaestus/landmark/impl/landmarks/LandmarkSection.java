@@ -133,15 +133,23 @@ public class LandmarkSection implements Comparable<LandmarkSection> {
 
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player != null) {
-            CompoundTag tag = player.getMainHandStack().getOrCreateTag();
-            if (tag.contains("deed_id")) {
-                UUID id = tag.getUuid("deed_id");
-                alpha = id.equals(this.parent) ? 1F : 0.25F;
+            double dx = ((this.minX + this.maxX) / 2D) - player.getX();
+            double dy = ((this.minY + this.maxY) / 2D) - player.getY();
+            double dz = ((this.minZ + this.maxZ) / 2D) - player.getZ();
+
+            if (dx < 300 && dy < 300 && dz < 300) {
+                CompoundTag tag = player.getMainHandStack().getOrCreateTag();
+                if (tag.contains("deed_id")) {
+                    UUID id = tag.getUuid("deed_id");
+                    alpha = id.equals(this.parent) ? 1F : 0.25F;
+                }
+
+                Landmark landmark = LandmarkTrackingComponent.of(MinecraftClient.getInstance().world).get(this.parent);
+                if (landmark != null) {
+                    Vector3f color = landmark.getColor();
+                    WorldRenderer.drawBox(matrices, vertexConsumer, this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ, color.getX(), color.getY(), color.getZ(), alpha);
+                }
             }
         }
-
-        Landmark landmark = LandmarkTrackingComponent.of(MinecraftClient.getInstance().world).get(this.parent);
-        Vector3f color = landmark.getColor();
-        WorldRenderer.drawBox(matrices, vertexConsumer, this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ, color.getX(), color.getY(), color.getZ(), alpha);
     }
 }

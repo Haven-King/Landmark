@@ -124,12 +124,20 @@ public class DeedItem extends Item {
 //                    return ActionResult.FAIL;
 //                }
 
-                PlayerLandmark landmark = (PlayerLandmark) LandmarkTrackingComponent.of(world).get(id);
+                LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
+                PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
+
+//                if (landmark == null) {
+//                    landmark = new PlayerLandmark(world);
+//                    trackingComponent.add(landmark);
+//                }
+
                 if (landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume)) {
                     double volume = landmark.volume();
                     landmark.makeSections(world);
                     tag.putDouble("volume", volume);
                     context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
+                    trackingComponent.sync();
                     return ActionResult.SUCCESS;
                 } else {
                     context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.volume", this.maxVolume), true);
@@ -205,7 +213,9 @@ public class DeedItem extends Item {
 
                 if (tag.contains("deed_id") && tag.getUuid("deed_id").equals(id)) {
                     tag.putString("deed_name", Text.Serializer.toJson(name));
-                    PlayerLandmark landmark = (PlayerLandmark) LandmarkTrackingComponent.of(world).get(id);
+                    LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
+                    PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
+
                     landmark.setName(name);
                     landmark.makeSections(world);
                 }

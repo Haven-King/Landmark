@@ -1,6 +1,7 @@
 package dev.hephaestus.landmark.impl.landmarks;
 
 import com.google.common.collect.ConcurrentHashMultiset;
+import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.nbt.CompoundTag;
@@ -10,11 +11,13 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.UUID;
 
 public abstract class Landmark {
@@ -45,6 +48,8 @@ public abstract class Landmark {
         } else {
             this.color = new Vector3f(1F, 1F, 1F);
         }
+
+        LandmarkTrackingComponent.of(this.world).sync();
     }
 
     public abstract boolean add(LandmarkSection section);
@@ -94,15 +99,29 @@ public abstract class Landmark {
 
     public static Landmark from(World world, CompoundTag tag) {
         String type = tag.getString("type");
+        Text name = Text.Serializer.fromJson(tag.getString("name"));
         switch (type) {
             case "player":
-                return new PlayerLandmark(world).fromTag(world, tag);
+                return new PlayerLandmark(world, name).fromTag(world, tag);
             default:
-                return new GeneratedLandmark(world, LiteralText.EMPTY);
+                return new GeneratedLandmark(world, BlockPos.fromLong(tag.getLong("center")), name);
         }
     }
 
     public final Iterable<? extends ChunkPos> getChunks() {
         return this.chunks;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Landmark landmark = (Landmark) o;
+        return Objects.equals(id, landmark.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
