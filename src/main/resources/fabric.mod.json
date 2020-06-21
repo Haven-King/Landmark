@@ -14,12 +14,13 @@
       "dev.hephaestus.landmark.impl.LandmarkMod"
     ],
     "client": [
-      "dev.hephaestus.landmark.impl.LandmarkMod"
+      "dev.hephaestus.landmark.impl.LandmarkClient"
     ],
     "modmenu": [
       "dev.hephaestus.landmark.impl.LandmarkModMenuImplementation"
     ]
   },
+  "accessWidener": "landmark.accesswidener",
   "mixins": [
     "landmark.mixins.json"
   ],

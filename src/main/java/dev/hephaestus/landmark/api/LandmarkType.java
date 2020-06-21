@@ -1,6 +1,6 @@
 package dev.hephaestus.landmark.api;
 
-import dev.hephaestus.landmark.impl.landmarks.LandmarkLocationPredicate;
+import dev.hephaestus.landmark.impl.util.LandmarkLocationPredicate;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;

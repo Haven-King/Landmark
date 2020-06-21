@@ -1,13 +1,18 @@
-package dev.hephaestus.landmark.impl.landmarks;
+package dev.hephaestus.landmark.impl.util;
 
 import java.io.InputStreamReader;
 import java.util.Collection;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
+import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
+import dev.hephaestus.landmark.impl.landmarks.Landmark;
+import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
+import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.buffer.Unpooled;
 
 import net.minecraft.network.PacketByteBuf;
@@ -48,7 +53,11 @@ public class LandmarkHandler {
 								)
 						);
 
-						LandmarkTypeRegistry.register(LandmarkSerializer.deserialize(id, jsonElement));
+						JsonObject jsonObject = jsonElement.getAsJsonObject();
+						Identifier nameGenerator = new Identifier(jsonObject.get("name_generator").getAsString());
+						LandmarkLocationPredicate predicate = LandmarkLocationPredicate.fromJson(jsonObject.get("location"));
+
+						LandmarkTypeRegistry.register(new LandmarkType(id, nameGenerator, predicate));
 						registered++;
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -62,7 +71,11 @@ public class LandmarkHandler {
 
 	public static void dispatch(ServerPlayerEntity player, LandmarkType landmarkType) {
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		buf.writeText(LandmarkNameTracker.getLandmarkName(landmarkType, player.getServerWorld(), player.getBlockPos()));
+		Landmark landmark = new GeneratedLandmark(player.getServerWorld(), landmarkType);
+		LandmarkTrackingComponent.add(player.getServerWorld(), landmark);
+
+		// TODO: Have generated landmarks saved in the same way as custom ones.
+		buf.writeText(landmark.getName());
 
 		ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, LandmarkMod.LANDMARK_DISCOVERED_PACKET, buf);
 	}

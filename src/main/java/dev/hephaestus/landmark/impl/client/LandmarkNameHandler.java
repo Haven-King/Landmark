@@ -1,22 +1,19 @@
 package dev.hephaestus.landmark.impl.client;
 
-import static dev.hephaestus.landmark.impl.LandmarkMod.CONFIG;
-
 import dev.hephaestus.landmark.impl.LandmarkMod;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.PacketContext;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.Text;
+
+import static dev.hephaestus.landmark.impl.LandmarkClient.CONFIG;
 
 @Environment(EnvType.CLIENT)
 public class LandmarkNameHandler extends DrawableHelper {

@@ -34,7 +34,7 @@ public class DeedEditScreen extends Screen {
 //    private ButtonWidget finalizeButton;
     private ButtonWidget saveButton;
 
-    public DeedEditScreen(ItemStack stack, Hand hand) {
+    public DeedEditScreen(UUID deedId, ItemStack stack, Hand hand) {
         super(new TranslatableText("deed.landmark.finalize"));
         Text text;
 
@@ -48,11 +48,7 @@ public class DeedEditScreen extends Screen {
             this.textColor = TextColor.fromFormatting(Formatting.WHITE);
         }
 
-        if (tag != null && tag.contains("deed_id")) {
-            this.deedId = tag.getUuid("deed_id");
-        } else {
-            this.deedId = null;
-        }
+        this.deedId = deedId;
 
 
         this.hand = hand;
@@ -71,7 +67,7 @@ public class DeedEditScreen extends Screen {
 
             this.colorField = new TextFieldWidget(this.client.textRenderer, (3 * width / 4) + 4, height / 2 - 10, width / 6, 20, new LiteralText(""));
 
-            int color = this.text.getStyle().getColor() == null ? 0xFFFFFFFF : this.text.getStyle().getColor().getRgb();
+            int color = this.text.getStyle().getColor() == null ? 0xFFFFFF : this.text.getStyle().getColor().getRgb();
             this.colorField.setText("#" + Integer.toHexString(color));
             this.colorField.setEditableColor(this.textColor.getRgb());
             this.colorField.setChangedListener((string) -> {
@@ -127,7 +123,8 @@ public class DeedEditScreen extends Screen {
     public static void open(PacketContext context, PacketByteBuf packetByteBuf) {
         PlayerEntity playerEntity = context.getPlayer();
         Hand hand = packetByteBuf.readEnumConstant(Hand.class);
+        UUID deedId = packetByteBuf.readUuid();
 
-        context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(new DeedEditScreen(playerEntity.getStackInHand(hand), hand)));
+        context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(new DeedEditScreen(deedId, playerEntity.getStackInHand(hand), hand)));
     }
 }
