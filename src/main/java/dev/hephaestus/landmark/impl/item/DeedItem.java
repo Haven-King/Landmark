@@ -1,8 +1,9 @@
 package dev.hephaestus.landmark.impl.item;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
-import dev.hephaestus.landmark.impl.landmarks.Landmark;
-import dev.hephaestus.landmark.impl.landmarks.LandmarkTracker;
+import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
+import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
+import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.util.Profiler;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -123,8 +124,8 @@ public class DeedItem extends Item {
 //                    return ActionResult.FAIL;
 //                }
 
-                Landmark landmark = LandmarkTracker.get(world).get(id);
-                if (LandmarkTracker.add(world, id, VoxelShapes.cuboid(Box.from(newBox)), this.maxVolume)) {
+                PlayerLandmark landmark = (PlayerLandmark) LandmarkTrackingComponent.of(world).get(id);
+                if (landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume)) {
                     double volume = landmark.volume();
                     landmark.makeSections(world);
                     tag.putDouble("volume", volume);
@@ -136,9 +137,9 @@ public class DeedItem extends Item {
                 }
             } else {
                 if (!tag.contains("deed_id")) {
-                    Landmark landmark = new Landmark();
-                    LandmarkTracker.add(world, landmark);
-                    tag.putUuid("deed_id", landmark.uuid);
+                    PlayerLandmark landmark = new PlayerLandmark(world);
+                    LandmarkTrackingComponent.add(world, landmark);
+                    tag.putUuid("deed_id", landmark.getId());
                 }
 
                 if (!tag.contains("world_key")) {
@@ -176,9 +177,9 @@ public class DeedItem extends Item {
         CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
         if (!world.isClient) {
             if (!tag.contains("deed_id")) {
-                Landmark landmark = new Landmark();
-                LandmarkTracker.add((ServerWorld) world, landmark);
-                tag.putUuid("deed_id", landmark.uuid);
+                PlayerLandmark landmark = new PlayerLandmark(world);
+                LandmarkTrackingComponent.add((ServerWorld) world, landmark);
+                tag.putUuid("deed_id", landmark.getId());
             }
 
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
@@ -204,8 +205,8 @@ public class DeedItem extends Item {
 
                 if (tag.contains("deed_id") && tag.getUuid("deed_id").equals(id)) {
                     tag.putString("deed_name", Text.Serializer.toJson(name));
-                    Landmark landmark = LandmarkTracker.get(world).get(id);
-                    landmark.setName(world, name);
+                    PlayerLandmark landmark = (PlayerLandmark) LandmarkTrackingComponent.of(world).get(id);
+                    landmark.setName(name);
                     landmark.makeSections(world);
                 }
             }

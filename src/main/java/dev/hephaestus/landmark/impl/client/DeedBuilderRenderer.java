@@ -2,7 +2,7 @@ package dev.hephaestus.landmark.impl.client;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.item.DeedItem;
-import dev.hephaestus.landmark.impl.landmarks.Landmark;
+import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -29,15 +29,15 @@ public class DeedBuilderRenderer {
 
             AtomicReferenceArray<WorldChunk> chunks = MinecraftClient.getInstance().world.getChunkManager().chunks.chunks;
 
-            HashSet<Landmark.Section> sections = new HashSet<>();
+            HashSet<LandmarkSection> sections = new HashSet<>();
             for (int i = 0; i < chunks.length(); ++i) {
                 if (chunks.get(i) != null) {
-                    LandmarkChunkComponent component = LandmarkMod.LANDMARKS_COMPONENT.get(chunks.get(i));
+                    LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(chunks.get(i));
                     sections.addAll(component.getSections());
                 }
             }
 
-            for (Landmark.Section section : sections) {
+            for (LandmarkSection section : sections) {
                 section.render(matrices, vertexConsumer);
             }
 

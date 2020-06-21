@@ -1,21 +1,14 @@
 package dev.hephaestus.landmark.impl;
 
-import dev.hephaestus.landmark.impl.client.DeedBuilderRenderer;
-import dev.hephaestus.landmark.impl.client.DeedEditScreen;
-import dev.hephaestus.landmark.impl.client.LandmarkNameHandler;
 import dev.hephaestus.landmark.impl.item.DeedItem;
-import dev.hephaestus.landmark.impl.landmarks.Landmark;
-import dev.hephaestus.landmark.impl.landmarks.LandmarkHandler;
-import dev.hephaestus.landmark.impl.landmarks.LandmarkTracker;
+import dev.hephaestus.landmark.impl.util.LandmarkHandler;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
-import dev.hephaestus.landmark.impl.util.DeedRegistry;
+import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
-import me.sargunvohra.mcmods.autoconfig1u.serializer.JanksonConfigSerializer;
 import nerdhub.cardinal.components.api.ComponentRegistry;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.event.ChunkComponentCallback;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import nerdhub.cardinal.components.api.event.WorldComponentCallback;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -26,9 +19,6 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.util.Identifier;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
 
 import java.util.concurrent.Executor;
@@ -47,9 +37,14 @@ public class LandmarkMod implements ModInitializer {
 	public static final Item RARE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.RARE), 262144);
 	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC), Integer.MAX_VALUE);
 
-	public static final ComponentType<LandmarkChunkComponent> LANDMARKS_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
-			id("component"),
+	public static final ComponentType<LandmarkChunkComponent> CHUNK_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
+			id("component", "chunk"),
 			LandmarkChunkComponent.class
+	);
+
+	public static final ComponentType<LandmarkTrackingComponent> TRACKING_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
+			id("component", "tracking"),
+			LandmarkTrackingComponent.class
 	);
 
 	public static Identifier id(String... path) {
@@ -63,8 +58,8 @@ public class LandmarkMod implements ModInitializer {
 
 		ServerSidePacketRegistry.INSTANCE.register(DeedItem.DEED_SAVE_PACKET_ID, DeedItem::saveName);
 
-		ChunkComponentCallback.EVENT.register(((chunk, componentContainer) -> componentContainer.put(LANDMARKS_COMPONENT, new LandmarkChunkComponent(chunk))));
-
+		ChunkComponentCallback.EVENT.register(((chunk, componentContainer) -> componentContainer.put(CHUNK_COMPONENT, new LandmarkChunkComponent(chunk))));
+		WorldComponentCallback.EVENT.register(((world, componentContainer) -> componentContainer.put(TRACKING_COMPONENT, new LandmarkTrackingComponent(world))));
 
 		Registry.register(Registry.ITEM, id("common_deed"), COMMON_DEED);
 		Registry.register(Registry.ITEM, id("uncommon_deed"), UNCOMMON_DEED);

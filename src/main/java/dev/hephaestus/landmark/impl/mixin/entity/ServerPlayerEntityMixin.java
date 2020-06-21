@@ -3,8 +3,9 @@ package dev.hephaestus.landmark.impl.mixin.entity;
 import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
-import dev.hephaestus.landmark.impl.landmarks.LandmarkHandler;
-import dev.hephaestus.landmark.impl.landmarks.LandmarkTracker;
+import dev.hephaestus.landmark.impl.util.LandmarkHandler;
+import dev.hephaestus.landmark.impl.util.Profiler;
+import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -39,25 +40,27 @@ public abstract class ServerPlayerEntityMixin extends LivingEntity {
 	@Inject(method = "playerTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/criterion/LocationArrivalCriterion;trigger(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
 	private void checkLandmarks(CallbackInfo ci) {
 		// TODO: Add some kind of delay before you can see the same message again
-		LandmarkChunkComponent container = LandmarkMod.LANDMARKS_COMPONENT.get(this.getServerWorld().getChunk(this.getBlockPos()));
+		LandmarkChunkComponent container = LandmarkMod.CHUNK_COMPONENT.get(this.getServerWorld().getChunk(this.getBlockPos()));
 		UUID landmark = container.getMatches(this.getPos());
+
+		Profiler.report(LandmarkMod.LOG);
 
 		if (landmark != null) {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-			buf.writeText(LandmarkTracker.get(this.getServerWorld()).getName(landmark));
+			buf.writeText(LandmarkTrackingComponent.of(this.getServerWorld()).getName(landmark));
 			ServerSidePacketRegistry.INSTANCE.sendToPlayer((ServerPlayerEntity) (Object) this, LandmarkMod.LANDMARK_DISCOVERED_PACKET, buf);
 		}
 
-		for (Identifier landmarkTypeId : LandmarkTypeRegistry.getRegistered()) {
-			LandmarkType landmarkType = LandmarkTypeRegistry.get(landmarkTypeId);
-
-			boolean isInLandmark = landmarkType.test((ServerPlayerEntity) (Object) this);
-
-			if (isInLandmark && !landmarkStatuses.getOrDefault(landmarkType, false)) {
-				LandmarkHandler.dispatch((ServerPlayerEntity) (Object) this, landmarkType);
-			}
-
-			this.landmarkStatuses.put(landmarkType, isInLandmark);
-		}
+//		for (Identifier landmarkTypeId : LandmarkTypeRegistry.getRegistered()) {
+//			LandmarkType landmarkType = LandmarkTypeRegistry.get(landmarkTypeId);
+//
+//			boolean isInLandmark = landmarkType.test((ServerPlayerEntity) (Object) this);
+//
+//			if (isInLandmark && !landmarkStatuses.getOrDefault(landmarkType, false)) {
+//				LandmarkHandler.dispatch((ServerPlayerEntity) (Object) this, landmarkType);
+//			}
+//
+//			this.landmarkStatuses.put(landmarkType, isInLandmark);
+//		}
 	}
 }

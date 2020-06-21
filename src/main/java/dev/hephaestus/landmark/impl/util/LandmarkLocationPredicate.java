@@ -1,4 +1,4 @@
-package dev.hephaestus.landmark.impl.landmarks;
+package dev.hephaestus.landmark.impl.util;
 
 import java.util.ArrayList;
 
