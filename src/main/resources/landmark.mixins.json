@@ -8,7 +8,8 @@
     "structure.StructureStartMixin"
   ],
   "client": [
-    "client.WorldRendererMixin"
+    "client.render.GameRendererMixin",
+    "client.render.WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

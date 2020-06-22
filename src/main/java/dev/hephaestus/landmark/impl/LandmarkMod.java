@@ -1,5 +1,8 @@
 package dev.hephaestus.landmark.impl;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.util.LandmarkHandler;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
@@ -9,20 +12,17 @@ import nerdhub.cardinal.components.api.ComponentRegistry;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.event.ChunkComponentCallback;
 import nerdhub.cardinal.components.api.event.WorldComponentCallback;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.util.Rarity;
-import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.util.Identifier;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.util.Rarity;
+import net.minecraft.util.registry.Registry;
 
 import net.fabricmc.api.ModInitializer;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
 public class LandmarkMod implements ModInitializer {
 	public static final String MODID = "landmark";

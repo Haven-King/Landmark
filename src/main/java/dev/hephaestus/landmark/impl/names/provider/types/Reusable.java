@@ -1,6 +1,7 @@
 package dev.hephaestus.landmark.impl.names.provider.types;
 
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
+
 import net.minecraft.text.MutableText;
 
 public class Reusable extends NameComponentProvider {

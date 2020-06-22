@@ -20,12 +20,12 @@ public class NameComponentProviderSerializer {
 			throw new IllegalArgumentException("Name generator in illegal format: must be a JsonObject");
 		}
 
-
 		JsonObject jsonObject = jsonElement.getAsJsonObject();
 
 		String type = jsonObject.get("type").getAsString();
 
 		TextColor color = TextColor.fromFormatting(Formatting.WHITE);
+
 		if (jsonObject.has("color")) {
 			color = TextColor.parse(jsonObject.get("color").getAsString());
 		}

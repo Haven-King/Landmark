@@ -1,54 +1,56 @@
 package dev.hephaestus.landmark.impl.util;
 
-import dev.hephaestus.landmark.impl.LandmarkMod;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import dev.hephaestus.landmark.impl.LandmarkMod;
+import org.apache.logging.log4j.Logger;
+
 public class Profiler {
-    private static Map<String, Long> TIMES = new TreeMap<>();
-    private static Map<String, Long> COUNTS = new TreeMap<>();
-    private static Stack<Section> STACK = new Stack<>();
+	private static final Map<String, Long> TIMES = new TreeMap<>();
+	private static final Map<String, Long> COUNTS = new TreeMap<>();
+	private static final Stack<Section> STACK = new Stack<>();
 
-    public static void push(String name) {
-        STACK.push(new Section(name));
-    }
+	public static void push(String name) {
+		STACK.push(new Section(name));
+	}
 
-    public static void pop(boolean print) {
-        STACK.pop().pop(print);
-    }
+	public static void pop(boolean print) {
+		STACK.pop().pop(print);
+	}
 
-    public static void report(Logger logger) {
-        logger.info("Times per category:");
-        for (Map.Entry<String, Long> entry : TIMES.entrySet()) {
-            logger.info("  {}: {}", entry.getKey(), ((double) entry.getValue()) / 1_000_000_000.0);
-        }
+	public static void report(Logger logger) {
+		logger.info("Times per category:");
 
-        logger.info("Average time per category:");
-        for (Map.Entry<String, Long> entry : TIMES.entrySet()) {
-            logger.info("  {}: {}", entry.getKey(), (((double)entry.getValue()) / ((double)COUNTS.get(entry.getKey()))) / 1_000_000_000.0);
-        }
-    }
+		for (Map.Entry<String, Long> entry : TIMES.entrySet()) {
+			logger.info("  {}: {}", entry.getKey(), ((double) entry.getValue()) / 1_000_000_000.0);
+		}
 
-    private static class Section {
-        private final String name;
-        private final long timeStart;
+		logger.info("Average time per category:");
 
-        private Section(String name) {
-            this.name = name;
-            this.timeStart = System.nanoTime();
-        }
+		for (Map.Entry<String, Long> entry : TIMES.entrySet()) {
+			logger.info("  {}: {}", entry.getKey(), (((double) entry.getValue()) / ((double) COUNTS.get(entry.getKey()))) / 1_000_000_000.0);
+		}
+	}
 
-        private void pop(boolean print) {
-            long time = System.nanoTime() - this.timeStart;
-            Profiler.TIMES.compute(this.name, (key, val) -> (val == null ? 0 : val) + time);
-            Profiler.COUNTS.compute(this.name, (key, val) -> (val == null ? 0 : val) + 1);
+	private static class Section {
+		private final String name;
+		private final long timeStart;
 
-            if (print) {
-                LandmarkMod.LOG.info("{}: {}ns", this.name, time);
-            }
-        }
-    }
+		private Section(String name) {
+			this.name = name;
+			this.timeStart = System.nanoTime();
+		}
+
+		private void pop(boolean print) {
+			long time = System.nanoTime() - this.timeStart;
+			Profiler.TIMES.compute(this.name, (key, val) -> (val == null ? 0 : val) + time);
+			Profiler.COUNTS.compute(this.name, (key, val) -> (val == null ? 0 : val) + 1);
+
+			if (print) {
+				LandmarkMod.LOG.info("{}: {}ns", this.name, time);
+			}
+		}
+	}
 }

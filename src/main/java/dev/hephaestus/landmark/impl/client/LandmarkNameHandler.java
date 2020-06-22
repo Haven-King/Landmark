@@ -1,11 +1,9 @@
 package dev.hephaestus.landmark.impl.client;
 
+import static dev.hephaestus.landmark.impl.LandmarkClient.CONFIG;
+
 import dev.hephaestus.landmark.impl.LandmarkMod;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -13,7 +11,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 
-import static dev.hephaestus.landmark.impl.LandmarkClient.CONFIG;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
 
 @Environment(EnvType.CLIENT)
 public class LandmarkNameHandler extends DrawableHelper {
@@ -23,15 +24,13 @@ public class LandmarkNameHandler extends DrawableHelper {
 
 	@Environment(EnvType.CLIENT)
 	public static void init() {
-		ClientSidePacketRegistry.INSTANCE.register(LandmarkMod.LANDMARK_DISCOVERED_PACKET, LandmarkNameHandler::accept);
-		HudRenderCallback.EVENT.register(LandmarkNameHandler::draw);
-	}
+		ClientSidePacketRegistry.INSTANCE.register(LandmarkMod.LANDMARK_DISCOVERED_PACKET, LandmarkNameHandler::accept); }
 
 	private static int duration() {
 		return (int) (CONFIG.namePopupFadeIn + CONFIG.namePopupDuration + CONFIG.namePopupFadeOut);
 	}
 
-	public static void draw(MatrixStack matrices, float tickDelta) {
+	public static void draw(MatrixStack matrices) {
 		if (NAME != null && NAME_DISPLAY_TOTAL_TICKS > 0) {
 			TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
@@ -54,7 +53,6 @@ public class LandmarkNameHandler extends DrawableHelper {
 			textRenderer.drawWithShadow(matrices, NAME, 0, 0, alpha << 24 | 0x00FFFFFF);
 
 			matrices.pop();
-
 		}
 
 		--NAME_DISPLAY_TOTAL_TICKS;

@@ -13,18 +13,18 @@ import com.google.gson.JsonParser;
 import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
-
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 
@@ -43,9 +43,11 @@ public class LandmarkHandler {
 
 		UUID landmark = null;
 		HashMap<UUID, Boolean> landmarks = new HashMap<>();
+
 		for (LandmarkSection section : container.getSections()) {
 			boolean bl = section.contains(x, y, z);
 			landmarks.put(section.parent, landmarks.getOrDefault(section.parent, false) || bl);
+
 			if (bl && landmark == null && !this.landmarkStatuses.containsKey(section.parent)) {
 				landmark = section.parent;
 				this.landmarkStatuses.put(section.parent, 200);
@@ -55,6 +57,7 @@ public class LandmarkHandler {
 		for (Map.Entry<UUID, Integer> entry : this.landmarkStatuses.entrySet()) {
 			if (!landmarks.getOrDefault(entry.getKey(), false)) {
 				int i = entry.getValue() - 1;
+
 				if (i <= 0) {
 					this.landmarkStatuses.remove(entry.getKey());
 				} else {

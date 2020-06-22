@@ -1,11 +1,14 @@
 package dev.hephaestus.landmark.impl.util;
 
+import java.util.ArrayList;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import dev.hephaestus.landmark.impl.LandmarkMod;
+
 import net.minecraft.predicate.NumberRange;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StructureStart;
@@ -16,8 +19,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.StructureFeature;
-
-import java.util.ArrayList;
 
 public class LandmarkLocationPredicate {
 	private final NumberRange.FloatRange y;
@@ -88,14 +89,17 @@ public class LandmarkLocationPredicate {
 		}
 	}
 
-	public boolean test(ServerPlayerEntity player) {
+	public int test(ServerPlayerEntity player) {
 		return this.test(player.getServerWorld().getStructureAccessor().method_28388(player.getBlockPos(), true, this.feature), player.getBlockPos(), player.getServerWorld());
 	}
 
-	public boolean test(StructureStart<?> structureStart, BlockPos pos, ServerWorldAccess world) {
+	public int test(StructureStart<?> structureStart, BlockPos pos, ServerWorldAccess world) {
+		int result = 100;
 
 		if (this.y != null && !this.y.test((float) pos.getY())) {
-			return false;
+			return -1;
+		} else {
+			result -= 5;
 		}
 
 		if (this.biomes.size() > 0) {
@@ -110,10 +114,20 @@ public class LandmarkLocationPredicate {
 			}
 
 			if (!testPassed) {
-				return false;
+				return -1;
+			} else {
+				result -= 5;
 			}
 		}
 
-		return this.feature == null || structureStart.hasChildren() && structureStart.getFeature() == this.feature;
+		if (this.feature != null) {
+			if (structureStart.hasChildren() && structureStart.getFeature() == this.feature) {
+				result -= 10;
+			} else {
+				return -1;
+			}
+		}
+
+		return result;
 	}
 }

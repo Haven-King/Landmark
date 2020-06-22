@@ -1,16 +1,14 @@
 package dev.hephaestus.landmark.impl.item;
 
+import java.util.List;
+import java.util.UUID;
+
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
-import dev.hephaestus.landmark.impl.util.Profiler;
 import io.netty.buffer.Unpooled;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.PacketContext;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -19,207 +17,150 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.structure.StructureStart;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.*;
-import net.minecraft.util.math.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.StructureAccessor;
-import net.minecraft.world.gen.feature.StructureFeature;
 
-import java.util.*;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.network.PacketContext;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
 public class DeedItem extends Item {
-    public static final Identifier DEED_SAVE_PACKET_ID = LandmarkMod.id("deed_screen", "save");
-    public static final Identifier DEED_OPEN_EDIT_SCREEN = LandmarkMod.id("deed_screen", "open");
+	public static final Identifier DEED_SAVE_PACKET_ID = LandmarkMod.id("deed_screen", "save");
+	public static final Identifier DEED_OPEN_EDIT_SCREEN = LandmarkMod.id("deed_screen", "open");
 
-    private final long maxVolume;
+	private final long maxVolume;
 
-    public DeedItem(Settings settings, long maxVolume) {
-        super(settings);
-        this.maxVolume = maxVolume;
-    }
+	public DeedItem(Settings settings, long maxVolume) {
+		super(settings);
+		this.maxVolume = maxVolume;
+	}
 
-    private static StructureStart<?> overlap(ServerWorld world, BlockBox box) {
-        int[][] pos = new int[][] {
-                new int[] {box.minX, box.getCenter().getX(), box.maxX},
-                new int[] {box.minZ, box.getCenter().getZ(), box.maxZ}
-        };
+	@Override
+	public ActionResult useOnBlock(ItemUsageContext context) {
+		if (!context.getWorld().isClient && context.getPlayer() != null) {
+			ServerWorld world = (ServerWorld) context.getWorld();
 
-        Set<Chunk> chunks = new HashSet<>();
-        for (int x = 0; x < 3; ++x) {
-            for (int z = 0; z < 3; ++z) {
-                chunks.add(world.getChunk(pos[0][x], pos[1][z]));
-            }
-        }
+			ItemStack stack = context.getPlayer().getStackInHand(context.getHand());
+			CompoundTag tag = stack.getOrCreateTag();
 
-        for (Chunk chunk : chunks) {
-            Profiler.push("getStructureAccessor");
-            StructureAccessor accessor = world.getStructureAccessor();
-            Profiler.pop(false);
+			if (tag.contains("marker")) {
+				if (RegistryKey.of(Registry.DIMENSION, new Identifier(tag.getString("world_key"))) != world.getRegistryKey()) {
+					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.world"), true);
+					return ActionResult.FAIL;
+				}
 
-            Profiler.push("getStructureReferences");
-            Map<StructureFeature<?>, LongSet> map = chunk.getStructureReferences();
-            Profiler.pop(false);
+				BlockPos marker1 = BlockPos.fromLong(tag.getLong("marker"));
+				tag.remove("marker");
+				BlockPos marker2 = context.getBlockPos();
 
-            Profiler.push("entrySet");
-            Set<Map.Entry<StructureFeature<?>, LongSet>> entrySet = map.entrySet();
-            Profiler.pop(false);
+				UUID id = tag.getUuid("deed_id");
 
-            Profiler.push("loop");
-            for (Map.Entry<StructureFeature<?>, LongSet> e : entrySet) {
-                for (Long l : e.getValue()) {
-                    Profiler.push("chunkPos");
-                    ChunkSectionPos chunkSectionPos = ChunkSectionPos.from(new ChunkPos(l), 0);
-                    Profiler.pop(false);
+				BlockBox newBox = new BlockBox(marker1, marker2);
 
-                    Profiler.push("getStructureStart");
-                    StructureStart<?> structure = accessor.getStructureStart(chunkSectionPos, e.getKey(), chunk);
-                    Profiler.pop(false);
+				LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
+				PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
 
-                    if (structure != null) {
-                        Profiler.push("intersect");
-                        if (box.intersects(structure.getBoundingBox())) return structure;
-                        Profiler.pop(false);
-                    }
-                }
-            }
-            Profiler.pop(false);
-        }
+				if (landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume)) {
+					double volume = landmark.volume();
+					landmark.makeSections(world);
+					tag.putDouble("volume", volume);
+					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
+					trackingComponent.sync();
+					return ActionResult.SUCCESS;
+				} else {
+					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.volume", this.maxVolume), true);
+					return ActionResult.FAIL;
+				}
+			} else {
+				if (!tag.contains("deed_id")) {
+					PlayerLandmark landmark = new PlayerLandmark(world);
+					LandmarkTrackingComponent.add(world, landmark);
+					tag.putUuid("deed_id", landmark.getId());
+				}
 
-        return null;
-    }
+				if (!tag.contains("world_key")) {
+					tag.putString("world_key", world.getRegistryKey().getValue().toString());
+				}
 
-    @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        if (!context.getWorld().isClient && context.getPlayer() != null) {
-            ServerWorld world = (ServerWorld) context.getWorld();
+				tag.putLong("marker", context.getBlockPos().asLong());
+				stack.setTag(tag);
+			}
+		}
 
-            ItemStack stack = context.getPlayer().getStackInHand(context.getHand());
-            CompoundTag tag = stack.getOrCreateTag();
+		return ActionResult.SUCCESS;
+	}
 
-            if (tag.contains("marker")) {
-                if (RegistryKey.of(Registry.DIMENSION, new Identifier(tag.getString("world_key"))) != world.getRegistryKey()) {
-                    context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.world"), true);
-                    return ActionResult.FAIL;
-                }
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
+		CompoundTag tag = stack.getTag();
+		int volume = 0;
 
-                BlockPos marker1 = BlockPos.fromLong(tag.getLong("marker"));
-                tag.remove("marker");
-                BlockPos marker2 = context.getBlockPos();
+		if (tag != null && tag.contains("volume", 6)) {
+			volume = (int) tag.getDouble("volume");
+		}
 
-                UUID id = tag.getUuid("deed_id");
+		tooltip.add(new TranslatableText("item.landmark.deed.volume", volume, this.maxVolume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
 
-                BlockBox newBox = new BlockBox(marker1, marker2);
+		if (tag != null && tag.contains("deed_name")) {
+			tooltip.add(Text.Serializer.fromJson(tag.getString("deed_name")));
+		}
 
-                // This checks that the player's selection overlaps structures. Unfortunately it's very slow and causes lag.
-//                StructureStart<?> overlap = overlap(world, newBox);
-//                if (overlap != null) {
-//                    context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.existing_structure"), true);
-//                    return ActionResult.FAIL;
-//                }
+		super.appendTooltip(stack, world, tooltip, context);
+	}
 
-                LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
-                PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
+	@Override
+	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+		CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
 
-//                if (landmark == null) {
-//                    landmark = new PlayerLandmark(world);
-//                    trackingComponent.add(landmark);
-//                }
+		if (!world.isClient) {
+			if (!tag.contains("deed_id")) {
+				PlayerLandmark landmark = new PlayerLandmark(world);
+				LandmarkTrackingComponent.add((ServerWorld) world, landmark);
+				tag.putUuid("deed_id", landmark.getId());
+			}
 
-                if (landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume)) {
-                    double volume = landmark.volume();
-                    landmark.makeSections(world);
-                    tag.putDouble("volume", volume);
-                    context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
-                    trackingComponent.sync();
-                    return ActionResult.SUCCESS;
-                } else {
-                    context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.volume", this.maxVolume), true);
-                    return ActionResult.FAIL;
-                }
-            } else {
-                if (!tag.contains("deed_id")) {
-                    PlayerLandmark landmark = new PlayerLandmark(world);
-                    LandmarkTrackingComponent.add(world, landmark);
-                    tag.putUuid("deed_id", landmark.getId());
-                }
+			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+			buf.writeEnumConstant(hand);
+			buf.writeUuid(tag.getUuid("deed_id"));
+			ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, DEED_OPEN_EDIT_SCREEN, buf);
+		}
 
-                if (!tag.contains("world_key")) {
-                    tag.putString("world_key", world.getRegistryKey().getValue().toString());
-                }
+		return super.use(world, user, hand);
+	}
 
-                tag.putLong("marker", context.getBlockPos().asLong());
-                stack.setTag(tag);
-            }
-        }
+	public static void saveName(PacketContext context, PacketByteBuf buf) {
+		UUID id = buf.readUuid();
+		Text name = buf.readText();
+		Hand hand = buf.readEnumConstant(Hand.class);
 
-        return ActionResult.SUCCESS;
-    }
+		context.getTaskQueue().execute(() -> {
+			ItemStack stack = context.getPlayer().getStackInHand(hand);
 
-    @Override
-    @Environment(EnvType.CLIENT)
-    public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-        CompoundTag tag = stack.getTag();
-        int volume = 0;
-        if (tag != null && tag.contains("volume", 6)) {
-            volume = (int) tag.getDouble("volume");
-        }
+			if (stack.getItem() instanceof DeedItem) {
+				CompoundTag tag = stack.getOrCreateTag();
+				ServerWorld world = (ServerWorld) context.getPlayer().getEntityWorld();
 
-        tooltip.add(new TranslatableText("item.landmark.deed.volume", volume, this.maxVolume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
+				if (tag.contains("deed_id") && tag.getUuid("deed_id").equals(id)) {
+					tag.putString("deed_name", Text.Serializer.toJson(name));
+					LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
+					PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
 
-        if (tag != null && tag.contains("deed_name")) {
-            tooltip.add(Text.Serializer.fromJson(tag.getString("deed_name")));
-        }
-
-        super.appendTooltip(stack, world, tooltip, context);
-    }
-
-    @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
-        if (!world.isClient) {
-            if (!tag.contains("deed_id")) {
-                PlayerLandmark landmark = new PlayerLandmark(world);
-                LandmarkTrackingComponent.add((ServerWorld) world, landmark);
-                tag.putUuid("deed_id", landmark.getId());
-            }
-
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-            buf.writeEnumConstant(hand);
-            buf.writeUuid(tag.getUuid("deed_id"));
-            ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, DEED_OPEN_EDIT_SCREEN, buf);
-        }
-
-        return super.use(world, user, hand);
-    }
-
-    public static void saveName(PacketContext context, PacketByteBuf buf) {
-        UUID id = buf.readUuid();
-        Text name = buf.readText();
-        Hand hand = buf.readEnumConstant(Hand.class);
-
-        context.getTaskQueue().execute(() -> {
-            ItemStack stack = context.getPlayer().getStackInHand(hand);
-
-            if (stack.getItem() instanceof DeedItem) {
-                CompoundTag tag = stack.getOrCreateTag();
-                ServerWorld world = (ServerWorld) context.getPlayer().getEntityWorld();
-
-                if (tag.contains("deed_id") && tag.getUuid("deed_id").equals(id)) {
-                    tag.putString("deed_name", Text.Serializer.toJson(name));
-                    LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
-                    PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
-
-                    landmark.setName(name);
-                    landmark.makeSections(world);
-                }
-            }
-        });
-    }
+					landmark.setName(name);
+					landmark.makeSections(world);
+				}
+			}
+		});
+	}
 }
