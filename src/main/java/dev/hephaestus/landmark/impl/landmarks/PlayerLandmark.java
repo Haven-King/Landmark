@@ -1,18 +1,13 @@
 package dev.hephaestus.landmark.impl.landmarks;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.*;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
@@ -24,6 +19,7 @@ import net.minecraft.world.World;
 public class PlayerLandmark extends Landmark {
 	private VoxelShape shape;
 	private double volume;
+	private HashSet<UUID> owners = new HashSet<>();
 
 	public PlayerLandmark(World world) {
 		this(world, LiteralText.EMPTY);
@@ -33,9 +29,19 @@ public class PlayerLandmark extends Landmark {
 		super(world, UUID.randomUUID(), name);
 	}
 
+	public PlayerLandmark withOwner(PlayerEntity playerEntity) {
+		this.owners.add(playerEntity.getUuid());
+		return this;
+	}
+
 	@Override
 	public CompoundTag toTag(CompoundTag tag) {
 		tag.putString("type", "player");
+
+		ListTag owners = tag.getList("owners", 8);
+		for (UUID owner : this.owners) {
+			owners.add(StringTag.of(owner.toString()));
+		}
 
 		if (this.shape != null) {
 			Collection<Box> boxes = this.shape.getBoundingBoxes();
@@ -64,6 +70,12 @@ public class PlayerLandmark extends Landmark {
 		super.fromTag(world, tag);
 
 		this.volume = tag.getDouble("volume");
+
+		this.owners = new HashSet<>();
+		ListTag owners = tag.getList("owners", 8);
+		for (Tag owner : owners) {
+			this.owners.add(UUID.fromString(owner.asString()));
+		}
 
 		if (tag.contains("boxes") && tag.contains("box_count")) {
 			ListTag boxes = tag.getList("boxes", 6);
@@ -118,10 +130,10 @@ public class PlayerLandmark extends Landmark {
 		return this.add(section, Double.MAX_VALUE);
 	}
 
-	public void makeSections(ServerWorld world) {
+	public void makeSections() {
 		if (this.shape != null) {
 			for (ChunkPos pos : chunks) {
-				LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
+				LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(this.getWorld().getChunk(pos.x, pos.z));
 				component.remove(this);
 			}
 
@@ -131,16 +143,16 @@ public class PlayerLandmark extends Landmark {
 				this.chunks.addAll(chunks);
 
 				for (ChunkPos pos : chunks) {
-					LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
+					LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(this.getWorld().getChunk(pos.x, pos.z));
 					component.add(section);
 				}
 			}));
 
-			LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(world);
+			LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(this.getWorld());
 
 			for (ChunkPos pos : chunks) {
 				tracker.put(pos, this);
-				LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(world.getChunk(pos.x, pos.z));
+				LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(this.getWorld().getChunk(pos.x, pos.z));
 				component.sync();
 			}
 
@@ -150,5 +162,9 @@ public class PlayerLandmark extends Landmark {
 
 	public double volume() {
 		return this.volume;
+	}
+
+	public boolean ownedBy(PlayerEntity playerEntity) {
+		return this.owners.contains(playerEntity.getUuid());
 	}
 }

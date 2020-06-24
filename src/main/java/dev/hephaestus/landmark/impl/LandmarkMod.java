@@ -57,6 +57,7 @@ public class LandmarkMod implements ModInitializer {
 		LandmarkHandler.init();
 
 		ServerSidePacketRegistry.INSTANCE.register(DeedItem.DEED_SAVE_PACKET_ID, DeedItem::saveName);
+		ServerSidePacketRegistry.INSTANCE.register(LandmarkTrackingComponent.LANDMARK_DELETE_ID, LandmarkTrackingComponent::delete);
 
 		ChunkComponentCallback.EVENT.register(((chunk, componentContainer) -> componentContainer.put(CHUNK_COMPONENT, new LandmarkChunkComponent(chunk))));
 		WorldComponentCallback.EVENT.register(((world, componentContainer) -> componentContainer.put(TRACKING_COMPONENT, new LandmarkTrackingComponent(world))));

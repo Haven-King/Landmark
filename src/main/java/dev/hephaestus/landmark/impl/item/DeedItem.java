@@ -73,7 +73,7 @@ public class DeedItem extends Item {
 
 				if (landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume)) {
 					double volume = landmark.volume();
-					landmark.makeSections(world);
+					landmark.makeSections();
 					tag.putDouble("volume", volume);
 					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
 					trackingComponent.sync();
@@ -85,7 +85,7 @@ public class DeedItem extends Item {
 			} else {
 				if (!tag.contains("deed_id")) {
 					PlayerLandmark landmark = new PlayerLandmark(world);
-					LandmarkTrackingComponent.add(world, landmark);
+					LandmarkTrackingComponent.add(world, landmark.withOwner(context.getPlayer()));
 					tag.putUuid("deed_id", landmark.getId());
 				}
 
@@ -127,7 +127,7 @@ public class DeedItem extends Item {
 		if (!world.isClient) {
 			if (!tag.contains("deed_id")) {
 				PlayerLandmark landmark = new PlayerLandmark(world);
-				LandmarkTrackingComponent.add((ServerWorld) world, landmark);
+				LandmarkTrackingComponent.add((ServerWorld) world, landmark.withOwner(user));
 				tag.putUuid("deed_id", landmark.getId());
 			}
 
@@ -158,7 +158,7 @@ public class DeedItem extends Item {
 					PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
 
 					landmark.setName(name);
-					landmark.makeSections(world);
+					landmark.makeSections();
 				}
 			}
 		});

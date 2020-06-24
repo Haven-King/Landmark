@@ -3,6 +3,7 @@ package dev.hephaestus.landmark.impl.client;
 import java.util.UUID;
 
 import dev.hephaestus.landmark.impl.item.DeedItem;
+import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.buffer.Unpooled;
 
 import net.minecraft.client.MinecraftClient;
@@ -33,6 +34,7 @@ public class DeedEditScreen extends Screen {
 	private TextColor textColor;
 	private TextFieldWidget nameField;
 	private TextFieldWidget colorField;
+	private ButtonWidget deleteButton;
 	private ButtonWidget saveButton;
 
 	public DeedEditScreen(UUID deedId, ItemStack stack, Hand hand) {
@@ -79,7 +81,14 @@ public class DeedEditScreen extends Screen {
 				}
 			});
 
-			this.saveButton = new ButtonWidget(width / 4, height / 2 + 14, width / 2, 20, new TranslatableText("deeds.landmark.save"), action -> {
+			this.deleteButton = new ButtonWidget(width / 4, height / 2 + 14, width / 4 - 2, 20, new TranslatableText("deeds.landmark.delete").styled(style -> style.withColor(Formatting.RED)), action -> {
+				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+				buf.writeUuid(this.deedId);
+				buf.writeEnumConstant(this.hand);
+				ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkTrackingComponent.LANDMARK_DELETE_ID, buf);
+			});
+
+			this.saveButton = new ButtonWidget(width / 2 + 2, height / 2 + 14, width / 4 - 2, 20, new TranslatableText("deeds.landmark.save"), action -> {
 				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 				buf.writeUuid(this.deedId);
 				buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
@@ -90,6 +99,7 @@ public class DeedEditScreen extends Screen {
 
 			this.children.add(this.nameField);
 			this.children.add(this.colorField);
+			this.children.add(this.deleteButton);
 			this.children.add(this.saveButton);
 		}
 	}
@@ -99,6 +109,7 @@ public class DeedEditScreen extends Screen {
 		DrawableHelper.fill(matrices, 0, 0, 1000, 1000, 0x88000000);
 		this.nameField.render(matrices, mouseX, mouseY, delta);
 		this.colorField.render(matrices, mouseX, mouseY, delta);
+		this.deleteButton.render(matrices, mouseX, mouseY, delta);
 		this.saveButton.render(matrices, mouseX, mouseY, delta);
 
 		super.render(matrices, mouseX, mouseY, delta);

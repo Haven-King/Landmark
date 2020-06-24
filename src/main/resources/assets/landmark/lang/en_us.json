@@ -10,5 +10,7 @@
   "deeds.landmark.fail.volume": "Fail. This box would exceed the deeds maximum volume of %d!",
   "deeds.landmark.success.add_box": "Added box successfully! The deed now has a total volume of %d.",
   "deeds.landmark.save": "Save",
-  "deeds.landmark.finalize": "Finalize"
+  "deeds.landmark.delete": "Delete",
+  "deeds.landmark.delete.fail": "Failed to delete landmark. %s",
+  "deeds.landmark.delete.fail.owner": "You are not an owner of this landmark!"
 }

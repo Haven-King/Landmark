@@ -11,12 +11,16 @@ import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
+import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import nerdhub.cardinal.components.api.util.sync.WorldSyncedComponent;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -27,7 +31,8 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.PacketContext;
 
 public class LandmarkTrackingComponent implements WorldSyncedComponent {
-	public static final Identifier LANDMARK_SYNC_ID = LandmarkMod.id("sync");
+	public static final Identifier LANDMARK_SYNC_ID = LandmarkMod.id("packet", "sync");
+	public static final Identifier LANDMARK_DELETE_ID = LandmarkMod.id("packet", "delete");
 
 	private final World world;
 
@@ -148,5 +153,32 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 	@Override
 	public World getWorld() {
 		return this.world;
+	}
+
+	public static void delete(PacketContext context, PacketByteBuf buf) {
+		UUID id = buf.readUuid();
+		Hand hand = buf.readEnumConstant(Hand.class);
+
+		context.getTaskQueue().execute(() -> {
+			LandmarkTrackingComponent tracker = of(context.getPlayer().getEntityWorld());
+			Landmark landmark = tracker.get(id);
+
+			if (landmark instanceof PlayerLandmark) {
+				if (((PlayerLandmark) landmark).ownedBy(context.getPlayer())) {
+					for (ChunkPos pos : landmark.getChunks()) {
+						LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(landmark.getWorld().getChunk(pos.x, pos.z));
+						component.remove((PlayerLandmark) landmark);
+					}
+
+					tracker.landmarks.remove(id);
+					context.getPlayer().setStackInHand(hand, new ItemStack(context.getPlayer().getStackInHand(hand).getItem()));
+					tracker.sync();
+				} else {
+					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.delete.fail", new TranslatableText("deeds.landmark.delete.fail.owner")), false);
+				}
+			} else {
+				context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.delete.fail"), false);
+			}
+		});
 	}
 }
