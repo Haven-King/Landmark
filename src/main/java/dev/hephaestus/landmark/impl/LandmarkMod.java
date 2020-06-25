@@ -40,7 +40,7 @@ public class LandmarkMod implements ModInitializer {
 	public static final Item RARE_DEED = new DeedItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.RARE), 262144);
 	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.EPIC), Double.MAX_VALUE);
 
-	public static final Item EVITION_NOTICE = new EvictionNoticeItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC));
+	public static final Item EVITION_NOTICE = new EvictionNoticeItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.EPIC));
 
 	public static final ComponentType<LandmarkChunkComponent> CHUNK_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
 			id("component", "chunk"),
