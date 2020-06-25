@@ -1,5 +1,9 @@
 package dev.hephaestus.landmark.api;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import dev.hephaestus.landmark.impl.util.LandmarkLocationPredicate;
 
@@ -14,15 +18,18 @@ import net.minecraft.world.gen.feature.StructureFeature;
 
 public class LandmarkType {
 	private final Identifier id;
-	private final Identifier name_generator;
+	private final List<Identifier> name_generators = new ArrayList<>();
 	private final LandmarkLocationPredicate predicate;
 	private final TextColor color;
 
-	public LandmarkType(Identifier id, Identifier name_generator, LandmarkLocationPredicate predicate, TextColor color) {
+	public LandmarkType(Identifier id, LandmarkLocationPredicate predicate, TextColor color) {
 		this.id = id;
-		this.name_generator = name_generator;
 		this.predicate = predicate;
 		this.color = color;
+	}
+
+	public void addNameGenerator(Identifier id) {
+		this.name_generators.add(id);
 	}
 
 	public Identifier getId() {
@@ -30,7 +37,7 @@ public class LandmarkType {
 	}
 
 	public MutableText generateName() {
-		return NameGenerator.generate(this.name_generator).styled(style -> style.withColor(this.color));
+		return NameGenerator.generate(this.name_generators.get(new Random().nextInt(this.name_generators.size()))).styled(style -> style.withColor(this.color));
 	}
 
 	public StructureFeature<?> getFeature() {

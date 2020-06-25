@@ -105,7 +105,6 @@ public class LandmarkHandler {
 						);
 
 						JsonObject jsonObject = jsonElement.getAsJsonObject();
-						Identifier nameGenerator = new Identifier(jsonObject.get("name_generator").getAsString());
 						LandmarkLocationPredicate predicate = LandmarkLocationPredicate.fromJson(jsonObject.get("location"));
 
 						TextColor color = TextColor.fromFormatting(Formatting.WHITE);
@@ -114,7 +113,21 @@ public class LandmarkHandler {
 							color = TextColor.parse(jsonObject.get("color").getAsString());
 						}
 
-						LandmarkTypeRegistry.register(new LandmarkType(id, nameGenerator, predicate, color));
+						LandmarkType type = new LandmarkType(id, predicate, color);
+
+						JsonElement nameGenerator = jsonObject.get("name_generator");
+
+						if (nameGenerator.isJsonPrimitive() && nameGenerator.getAsJsonPrimitive().isString()) {
+							type.addNameGenerator(new Identifier(jsonObject.get("name_generator").getAsString()));
+						} else if (nameGenerator.isJsonArray()) {
+							for (JsonElement element : nameGenerator.getAsJsonArray()) {
+								if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
+									type.addNameGenerator(new Identifier(element.getAsString()));
+								}
+							}
+						}
+
+						LandmarkTypeRegistry.register(type);
 						registered++;
 					} catch (Exception e) {
 						e.printStackTrace();

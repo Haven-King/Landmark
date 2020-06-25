@@ -1,5 +1,8 @@
 {
-  "name_generator": "landmark:shipwreck",
+  "name_generator": [
+    "landmark:ship",
+    "landmark:pirate_ship"
+  ],
   "location": {
     "feature": "shipwreck"
   }
