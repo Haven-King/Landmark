@@ -106,7 +106,17 @@ public class PlayerLandmark extends Landmark {
 	}
 
 	public void makeSections() {
-		if (this.shape != null) {
+		if (!this.getWorld().isClient && this.shape != null) {
+			boolean allChunksLoaded = true;
+
+			for (ChunkPos pos : chunks) {
+				allChunksLoaded &= !this.getWorld().getChunk(pos.x, pos.z).isEmpty();
+			}
+
+			if (!allChunksLoaded) {
+				return;
+			}
+
 			for (ChunkPos pos : chunks) {
 				LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(this.getWorld().getChunk(pos.x, pos.z));
 				component.remove(this);
