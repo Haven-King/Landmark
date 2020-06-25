@@ -1,9 +1,13 @@
 package dev.hephaestus.landmark.api;
 
+import dev.hephaestus.landmark.impl.names.NameGenerator;
 import dev.hephaestus.landmark.impl.util.LandmarkLocationPredicate;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StructureStart;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
@@ -14,27 +18,25 @@ public class LandmarkType {
 	private final Identifier id;
 	private final Identifier name_generator;
 	private final LandmarkLocationPredicate predicate;
+	private final TextColor color;
 
-	public LandmarkType(Identifier id, Identifier name_generator, LandmarkLocationPredicate predicate) {
+	public LandmarkType(Identifier id, Identifier name_generator, LandmarkLocationPredicate predicate, TextColor color) {
 		this.id = id;
 		this.name_generator = name_generator;
 		this.predicate = predicate;
+		this.color = color;
 	}
 
 	public Identifier getId() {
 		return this.id;
 	}
 
-	public Identifier getNameGeneratorId() {
-		return this.name_generator;
+	public MutableText generateName() {
+		return NameGenerator.generate(this.name_generator).styled(style -> style.withColor(this.color));
 	}
 
 	public StructureFeature<?> getFeature() {
 		return predicate.getFeature();
-	}
-
-	public Pair<Integer, LandmarkType> test(ServerPlayerEntity player) {
-		return new Pair<>(this.predicate.test(player), this);
 	}
 
 	public Pair<Integer, LandmarkType> test(StructureStart<?> structureStart, BlockPos pos, ServerWorldAccess access) {

@@ -9,7 +9,6 @@ import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
-import dev.hephaestus.landmark.impl.names.NameGenerator;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import net.minecraft.text.MutableText;
 import org.spongepowered.asm.mixin.Final;
@@ -53,6 +52,7 @@ public abstract class StructureStartMixin {
 		if (serverWorldAccess instanceof ServerWorld) {
 			world = (ServerWorld) serverWorldAccess;
 		} else if (serverWorldAccess instanceof ChunkRegion) {
+			//noinspection deprecation
 			world = ((ChunkRegion) serverWorldAccess).getWorld();
 		} else {
 			world = null;
@@ -60,6 +60,7 @@ public abstract class StructureStartMixin {
 
 		ImmutableList<StructurePiece> list = ImmutableList.copyOf(this.children);
 		LandmarkMod.EXECUTOR.execute(() -> {
+			//noinspection ConstantConditions
 			LandmarkType type = LandmarkTypeRegistry.get((StructureStart<?>) (Object) this, world);
 
 			if (world != null && type != null && this.hasChildren()) {
@@ -70,7 +71,7 @@ public abstract class StructureStartMixin {
 					landmark = (GeneratedLandmark) tracker.get(this.getPos());
 				} else {
 					landmark = new GeneratedLandmark(world, this.getPos(), (MutableText) LiteralText.EMPTY);
-					landmark.setName(NameGenerator.generate(type.getNameGeneratorId()));
+					landmark.setName(type.generateName());
 				}
 
 				LandmarkTrackingComponent.add(world, landmark);

@@ -23,6 +23,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -106,7 +108,13 @@ public class LandmarkHandler {
 						Identifier nameGenerator = new Identifier(jsonObject.get("name_generator").getAsString());
 						LandmarkLocationPredicate predicate = LandmarkLocationPredicate.fromJson(jsonObject.get("location"));
 
-						LandmarkTypeRegistry.register(new LandmarkType(id, nameGenerator, predicate));
+						TextColor color = TextColor.fromFormatting(Formatting.WHITE);
+
+						if (jsonObject.has("color")) {
+							color = TextColor.parse(jsonObject.get("color").getAsString());
+						}
+
+						LandmarkTypeRegistry.register(new LandmarkType(id, nameGenerator, predicate, color));
 						registered++;
 					} catch (Exception e) {
 						e.printStackTrace();

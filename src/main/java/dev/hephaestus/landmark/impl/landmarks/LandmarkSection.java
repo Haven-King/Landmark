@@ -132,7 +132,7 @@ public class LandmarkSection implements Comparable<LandmarkSection> {
 
 	@Environment(EnvType.CLIENT)
 	public void render(MatrixStack matrices, VertexConsumer vertexConsumer) {
-		float alpha = 0.5F;
+		float alpha = 0.25F;
 
 		PlayerEntity player = MinecraftClient.getInstance().player;
 

@@ -1,7 +1,7 @@
 {
   "name_generator": "landmark:nether_fortress",
-  "color": "#ffcc00",
+  "color": "#880000",
   "location": {
-    "feature": "bastion_remnant"
+    "feature": "fortress"
   }
 }

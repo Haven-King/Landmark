@@ -35,7 +35,7 @@ public class LandmarkMod implements ModInitializer {
 	public static final Item COMMON_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.COMMON), 4096);
 	public static final Item UNCOMMON_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON), 32768);
 	public static final Item RARE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.RARE), 262144);
-	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC), Integer.MAX_VALUE);
+	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC), Double.MAX_VALUE);
 
 	public static final Item EVITION_NOTICE = new EvictionNoticeItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC));
 
