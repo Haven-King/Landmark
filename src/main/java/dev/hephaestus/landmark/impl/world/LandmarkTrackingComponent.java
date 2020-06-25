@@ -1,22 +1,21 @@
 package dev.hephaestus.landmark.impl.world;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.google.common.collect.ConcurrentHashMultiset;
 import dev.hephaestus.landmark.impl.LandmarkClient;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
+import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
+import io.netty.buffer.Unpooled;
 import nerdhub.cardinal.components.api.util.sync.WorldSyncedComponent;
-
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.network.PacketContext;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
@@ -24,14 +23,14 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.PacketContext;
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LandmarkTrackingComponent implements WorldSyncedComponent {
 
@@ -171,24 +170,20 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 			LandmarkTrackingComponent tracker = of(context.getPlayer().getEntityWorld());
 			Landmark landmark = tracker.get(id);
 
-			if (landmark instanceof PlayerLandmark || !wasEditScreen) {
-				if (landmark.canModify(context.getPlayer())) {
-					for (ChunkPos pos : landmark.getChunks()) {
-						LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(landmark.getWorld().getChunk(pos.x, pos.z));
-						component.remove(landmark);
-						component.sync();
-					}
-
-					tracker.landmarks.remove(id);
-					if (finalHand != null) {
-						context.getPlayer().setStackInHand(finalHand, new ItemStack(context.getPlayer().getStackInHand(finalHand).getItem()));
-					}
-					tracker.sync();
-				} else {
-					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.delete.fail", new TranslatableText("deeds.landmark.fail.permissions")), true);
+			if (landmark.canModify(context.getPlayer())) {
+				for (ChunkPos pos : landmark.getChunks()) {
+					LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(landmark.getWorld().getChunk(pos.x, pos.z));
+					component.remove(landmark);
+					component.sync();
 				}
+
+				tracker.landmarks.remove(id);
+				if (finalHand != null) {
+					context.getPlayer().setStackInHand(finalHand, new ItemStack(context.getPlayer().getStackInHand(finalHand).getItem()));
+				}
+				tracker.sync();
 			} else {
-				context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.delete.fail"), true);
+				context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.delete.fail", new TranslatableText("deeds.landmark.fail.permissions")), true);
 			}
 		});
 	}
@@ -201,9 +196,14 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 			LandmarkTrackingComponent tracker = of(context.getPlayer().getEntityWorld());
 			Landmark landmark = tracker.get(id);
 			if (landmark != null && landmark.canModify(context.getPlayer())) {
+				landmark.withOwner(context.getPlayer());
 				CompoundTag tag = context.getPlayer().getStackInHand(hand).getOrCreateTag();
 				tag.putUuid("landmark_id", id);
 				tag.putString("landmark_name", Text.Serializer.toJson(landmark.getName()));
+
+				if (landmark instanceof GeneratedLandmark) {
+					tag.putBoolean("is_generated", true);
+				}
 
 				if (landmark instanceof PlayerLandmark) {
 					tag.putDouble("volume", ((PlayerLandmark) landmark).volume());
@@ -219,6 +219,11 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 			PlayerLandmark landmark = new PlayerLandmark(context.getPlayer().getEntityWorld());
 			LandmarkTrackingComponent.add((ServerWorld) context.getPlayer().getEntityWorld(), landmark.withOwner(context.getPlayer()));
 			context.getPlayer().getStackInHand(hand).getOrCreateTag().putUuid("landmark_id", landmark.getId());
+
+			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+			buf.writeEnumConstant(hand);
+			buf.writeUuid(landmark.getId());
+			ServerSidePacketRegistry.INSTANCE.sendToPlayer(context.getPlayer(), LandmarkNetworking.OPEN_EDIT_SCREEN, buf);
 		});
 	}
 }

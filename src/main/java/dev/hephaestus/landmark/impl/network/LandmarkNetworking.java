@@ -1,11 +1,11 @@
 package dev.hephaestus.landmark.impl.network;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
-import dev.hephaestus.landmark.impl.client.DeedEditScreen;
-import dev.hephaestus.landmark.impl.client.DeleteLandmarkScreen;
-import dev.hephaestus.landmark.impl.client.LandmarkClaimScreen;
+import dev.hephaestus.landmark.impl.client.gui.EditScreen;
+import dev.hephaestus.landmark.impl.client.gui.DeletionScreen;
+import dev.hephaestus.landmark.impl.client.gui.ClaimScreen;
 import dev.hephaestus.landmark.impl.client.LandmarkNameHandler;
-import dev.hephaestus.landmark.impl.item.DeedItem;
+import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -29,7 +29,7 @@ public class LandmarkNetworking implements ModInitializer, ClientModInitializer 
 
 	@Override
 	public void onInitialize() {
-		ServerSidePacketRegistry.INSTANCE.register(SAVE_LANDMARK_NAME, DeedItem::saveName);
+		ServerSidePacketRegistry.INSTANCE.register(SAVE_LANDMARK_NAME, Landmark::saveName);
 		ServerSidePacketRegistry.INSTANCE.register(TRACKER_DELETE_LANDMARK, LandmarkTrackingComponent::delete);
 		ServerSidePacketRegistry.INSTANCE.register(TRACKER_CLAIM_LANDMARK, LandmarkTrackingComponent::claim);
 		ServerSidePacketRegistry.INSTANCE.register(TRACKER_NEW_LANDMARK, LandmarkTrackingComponent::newLandmark);
@@ -37,10 +37,10 @@ public class LandmarkNetworking implements ModInitializer, ClientModInitializer 
 
 	@Override
 	public void onInitializeClient() {
-		ClientSidePacketRegistry.INSTANCE.register(OPEN_EDIT_SCREEN, DeedEditScreen::open);
+		ClientSidePacketRegistry.INSTANCE.register(OPEN_EDIT_SCREEN, EditScreen::new);
+		ClientSidePacketRegistry.INSTANCE.register(OPEN_DELETION_SCREEN, DeletionScreen::new);
+		ClientSidePacketRegistry.INSTANCE.register(OPEN_CLAIM_SCREEN, ClaimScreen::new);
 		ClientSidePacketRegistry.INSTANCE.register(TRACKER_SYNC, LandmarkTrackingComponent::read);
-		ClientSidePacketRegistry.INSTANCE.register(OPEN_DELETION_SCREEN, DeleteLandmarkScreen::open);
-		ClientSidePacketRegistry.INSTANCE.register(OPEN_CLAIM_SCREEN, LandmarkClaimScreen::open);
 		ClientSidePacketRegistry.INSTANCE.register(ENTERED_LANDMARK, LandmarkNameHandler::accept);
 	}
 

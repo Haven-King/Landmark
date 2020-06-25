@@ -17,7 +17,6 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
@@ -33,30 +32,38 @@ import net.minecraft.world.World;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.PacketContext;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
 public class DeedItem extends Item {
 
-	private final long maxVolume;
+	private final double maxVolume;
 
-	public DeedItem(Settings settings, long maxVolume) {
+	public DeedItem(Settings settings, double maxVolume) {
 		super(settings);
 		this.maxVolume = maxVolume;
 	}
 
 	@Override
 	public ActionResult useOnBlock(ItemUsageContext context) {
-		if (!context.getWorld().isClient && context.getPlayer() != null) {
-			ItemStack stack = context.getPlayer().getStackInHand(context.getHand());
+		if (context.getPlayer() == null) {
+			return ActionResult.PASS;
+		}
 
+		ItemStack stack = context.getPlayer().getStackInHand(context.getHand());
+
+		CompoundTag tag = stack.getTag();
+		if (tag != null && tag.contains("is_generated") && tag.getBoolean("is_generated")) {
+			return ActionResult.PASS;
+		}
+
+		if (!context.getWorld().isClient && context.getPlayer() != null) {
 			if (stack.hasTag()) {
 				verifyTag(context.getPlayer(), context.getHand());
 
 				ServerWorld world = (ServerWorld) context.getWorld();
 
 
-				CompoundTag tag = stack.getOrCreateTag();
+				tag = stack.getTag();
 
 				if (tag.contains("marker")) {
 					if (RegistryKey.of(Registry.DIMENSION, new Identifier(tag.getString("world_key"))) != world.getRegistryKey()) {
@@ -125,7 +132,13 @@ public class DeedItem extends Item {
 			volume = (int) tag.getDouble("volume");
 		}
 
-		tooltip.add(new TranslatableText("item.landmark.deed.volume", volume, this.maxVolume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
+		if (tag != null && (!tag.contains("is_generated") || !tag.getBoolean("is_generated"))) {
+			if (this.maxVolume < Double.MAX_VALUE) {
+				tooltip.add(new TranslatableText("item.landmark.deed.volume", volume, (int)this.maxVolume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
+			} else {
+				tooltip.add(new TranslatableText("item.landmark.deed.volume.creative", volume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
+			}
+		}
 
 		if (tag != null && tag.contains("landmark_name")) {
 			tooltip.add(Text.Serializer.fromJson(tag.getString("landmark_name")));
@@ -162,9 +175,9 @@ public class DeedItem extends Item {
 		return super.use(world, user, hand);
 	}
 
-	private static void verifyTag(PlayerEntity user, Hand hand) {
+	public static void verifyTag(PlayerEntity user, Hand hand) {
 		CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
-		if (tag.contains("landmark_id") && tag.contains("world_key")) {
+		if (tag.contains("landmark_id") && tag.contains("world_key") && user.getEntityWorld().getServer() != null) {
 			ServerWorld world = user.getEntityWorld().getServer().getWorld(RegistryKey.of(Registry.DIMENSION, new Identifier(tag.getString("world_key"))));
 			if (LandmarkTrackingComponent.of(world).get(tag.getUuid("landmark_id")) == null) {
 				user.setStackInHand(hand, new ItemStack(user.getStackInHand(hand).getItem()));
@@ -172,34 +185,4 @@ public class DeedItem extends Item {
 		}
 	}
 
-	public static void saveName(PacketContext context, PacketByteBuf buf) {
-		UUID id = buf.readUuid();
-		MutableText name = (MutableText) buf.readText();
-		Hand hand = buf.readEnumConstant(Hand.class);
-
-		context.getTaskQueue().execute(() -> {
-			verifyTag(context.getPlayer(), hand);
-
-			ItemStack stack = context.getPlayer().getStackInHand(hand);
-
-			if (stack.getItem() instanceof DeedItem) {
-				CompoundTag tag = stack.getOrCreateTag();
-				ServerWorld world = (ServerWorld) context.getPlayer().getEntityWorld();
-
-				LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
-				PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
-
-				if (tag.contains("landmark_id") && tag.getUuid("landmark_id").equals(id)) {
-					if (landmark.canModify(context.getPlayer())) {
-						tag.putString("landmark_name", Text.Serializer.toJson(name));
-
-						landmark.setName(name);
-						landmark.makeSections();
-					} else {
-						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.rename.fail"), true);
-					}
-				}
-			}
-		});
-	}
 }

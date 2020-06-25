@@ -1,27 +1,34 @@
 package dev.hephaestus.landmark.impl.landmarks;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.UUID;
 
+import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.util.internal.ConcurrentSet;
 
+import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.LongTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.*;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 public abstract class Landmark {
 	protected final Collection<ChunkPos> chunks = new ConcurrentSet<>();
+	private HashSet<UUID> owners = new HashSet<>();
+
 
 	private World world;
 	private UUID id;
@@ -32,6 +39,11 @@ public abstract class Landmark {
 		this.world = world;
 		this.id = id;
 		this.setName(name);
+	}
+
+	public Landmark withOwner(PlayerEntity playerEntity) {
+		this.owners.add(playerEntity.getUuid());
+		return this;
 	}
 
 	public final void setName(MutableText name) {
@@ -71,7 +83,7 @@ public abstract class Landmark {
 	}
 
 	public boolean canModify(PlayerEntity playerEntity) {
-		return playerEntity.hasPermissionLevel(2);
+		return this.owners.isEmpty() || this.owners.contains(playerEntity.getUuid()) || playerEntity.hasPermissionLevel(2);
 	}
 
 	protected final Landmark with(UUID id) {
@@ -91,6 +103,11 @@ public abstract class Landmark {
 
 		tag.put("chunks", chunks);
 
+		ListTag owners = tag.getList("owners", 8);
+		for (UUID owner : this.owners) {
+			owners.add(StringTag.of(owner.toString()));
+		}
+
 		return tag;
 	}
 
@@ -105,6 +122,12 @@ public abstract class Landmark {
 			this.chunks.add(new ChunkPos(((LongTag) chunk).getLong()));
 		}
 
+		this.owners = new HashSet<>();
+		ListTag owners = tag.getList("owners", 8);
+		for (Tag owner : owners) {
+			this.owners.add(UUID.fromString(owner.asString()));
+		}
+
 		return this;
 	}
 
@@ -112,10 +135,9 @@ public abstract class Landmark {
 		String type = tag.getString("type");
 		UUID id = tag.getUuid("id");
 		MutableText name = Text.Serializer.fromJson(tag.getString("name"));
-		switch (type) {
-		case "player":
+		if ("player".equals(type)) {
 			return new PlayerLandmark(world, name).fromTag(world, tag).with(id);
-		default:
+		} else {
 			return new GeneratedLandmark(world, BlockPos.fromLong(tag.getLong("center")), name).with(id);
 		}
 	}
@@ -135,5 +157,35 @@ public abstract class Landmark {
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
+	}
+
+	public static void saveName(PacketContext context, PacketByteBuf buf) {
+		UUID id = buf.readUuid();
+		MutableText name = (MutableText) buf.readText();
+		Hand hand = buf.readEnumConstant(Hand.class);
+
+		context.getTaskQueue().execute(() -> {
+			DeedItem.verifyTag(context.getPlayer(), hand);
+
+			ItemStack stack = context.getPlayer().getStackInHand(hand);
+
+			if (stack.getItem() instanceof DeedItem) {
+				CompoundTag tag = stack.getOrCreateTag();
+				ServerWorld world = (ServerWorld) context.getPlayer().getEntityWorld();
+
+				LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(world);
+				Landmark landmark = tracker.get(id);
+
+				if (tag.contains("landmark_id") && tag.getUuid("landmark_id").equals(id)) {
+					if (landmark.canModify(context.getPlayer())) {
+						tag.putString("landmark_name", Text.Serializer.toJson(name));
+						landmark.setName(name);
+						tracker.sync();
+					} else {
+						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.rename.fail"), true);
+					}
+				}
+			}
+		});
 	}
 }

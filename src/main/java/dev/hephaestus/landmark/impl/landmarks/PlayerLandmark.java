@@ -20,7 +20,6 @@ import net.minecraft.world.World;
 public class PlayerLandmark extends Landmark {
 	private VoxelShape shape;
 	private double volume;
-	private HashSet<UUID> owners = new HashSet<>();
 
 	public PlayerLandmark(World world) {
 		this(world, (MutableText) LiteralText.EMPTY);
@@ -30,19 +29,9 @@ public class PlayerLandmark extends Landmark {
 		super(world, UUID.randomUUID(), name);
 	}
 
-	public PlayerLandmark withOwner(PlayerEntity playerEntity) {
-		this.owners.add(playerEntity.getUuid());
-		return this;
-	}
-
 	@Override
 	public CompoundTag toTag(CompoundTag tag) {
 		tag.putString("type", "player");
-
-		ListTag owners = tag.getList("owners", 8);
-		for (UUID owner : this.owners) {
-			owners.add(StringTag.of(owner.toString()));
-		}
 
 		if (this.shape != null) {
 			Collection<Box> boxes = this.shape.getBoundingBoxes();
@@ -71,12 +60,6 @@ public class PlayerLandmark extends Landmark {
 		super.fromTag(world, tag);
 
 		this.volume = tag.getDouble("volume");
-
-		this.owners = new HashSet<>();
-		ListTag owners = tag.getList("owners", 8);
-		for (Tag owner : owners) {
-			this.owners.add(UUID.fromString(owner.asString()));
-		}
 
 		if (tag.contains("boxes") && tag.contains("box_count")) {
 			ListTag boxes = tag.getList("boxes", 6);
@@ -163,10 +146,5 @@ public class PlayerLandmark extends Landmark {
 
 	public double volume() {
 		return this.volume;
-	}
-
-	@Override
-	public boolean canModify(PlayerEntity playerEntity) {
-		return super.canModify(playerEntity) || this.owners.isEmpty() || this.owners.contains(playerEntity.getUuid());
 	}
 }

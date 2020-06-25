@@ -1,4 +1,4 @@
-package dev.hephaestus.landmark.impl.client;
+package dev.hephaestus.landmark.impl.client.gui.widget;
 
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import net.minecraft.client.MinecraftClient;
