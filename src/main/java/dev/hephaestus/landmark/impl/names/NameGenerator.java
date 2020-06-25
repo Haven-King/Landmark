@@ -39,7 +39,7 @@ public class NameGenerator {
 			throw new IllegalArgumentException("Name provider not registered for \"" + id.toString() + "\"");
 		}
 
-		return new LiteralText(WordUtils.capitalize(provider.generateComponent().getString())).styled(style -> style.withColor(provider.getColor()));
+		return new LiteralText(WordUtils.capitalize(provider.generateComponent().getString().trim())).styled(style -> style.withColor(provider.getColor()));
 	}
 
 	public static void init() {

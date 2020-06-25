@@ -9,6 +9,7 @@ import java.util.UUID;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -20,7 +21,7 @@ public class GeneratedLandmark extends Landmark {
 
 	private final BlockPos center;
 
-	public GeneratedLandmark(World world, BlockPos pos, Text name) {
+	public GeneratedLandmark(World world, BlockPos pos, MutableText name) {
 		super(world, UUID.randomUUID(), name);
 		this.center = pos;
 	}
@@ -50,21 +51,23 @@ public class GeneratedLandmark extends Landmark {
 	}
 
 	public static void resolve(GeneratedLandmark landmark) {
-		for (ChunkPos pos : landmark.chunks) {
-			if (landmark.getWorld().isChunkLoaded(pos.x, pos.z)) {
-				LandmarkChunkComponent component = LandmarkChunkComponent.of(landmark.getWorld().getChunk(pos.x, pos.z));
+		if (landmark.needsResolving()) {
+			for (ChunkPos pos : landmark.pendingChunks) {
+				if (landmark.getWorld().isChunkLoaded(pos.x, pos.z)) {
+					LandmarkChunkComponent component = LandmarkChunkComponent.of(landmark.getWorld().getChunk(pos.x, pos.z));
 
-				for (LandmarkSection section : landmark.sections) {
-					if (section.getChunks().contains(pos)) {
-						component.add(section);
+					for (LandmarkSection section : landmark.sections) {
+						if (section.getChunks().contains(pos)) {
+							component.add(section);
+						}
 					}
+
+					component.sync();
 				}
-
-				component.sync();
 			}
-		}
 
-		landmark.chunks.removeIf((pos) -> landmark.getWorld().isChunkLoaded(pos.x, pos.z));
+			landmark.pendingChunks.removeIf((pos) -> landmark.getWorld().isChunkLoaded(pos.x, pos.z));
+		}
 	}
 
 	@Override

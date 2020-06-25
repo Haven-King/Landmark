@@ -3,9 +3,9 @@ package dev.hephaestus.landmark.impl.item;
 import java.util.List;
 import java.util.UUID;
 
-import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
+import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.buffer.Unpooled;
 
@@ -17,6 +17,7 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
@@ -36,8 +37,6 @@ import net.fabricmc.fabric.api.network.PacketContext;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
 public class DeedItem extends Item {
-	public static final Identifier DEED_SAVE_PACKET_ID = LandmarkMod.id("deed_screen", "save");
-	public static final Identifier DEED_OPEN_EDIT_SCREEN = LandmarkMod.id("deed_screen", "open");
 
 	private final long maxVolume;
 
@@ -49,52 +48,67 @@ public class DeedItem extends Item {
 	@Override
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		if (!context.getWorld().isClient && context.getPlayer() != null) {
-			ServerWorld world = (ServerWorld) context.getWorld();
-
 			ItemStack stack = context.getPlayer().getStackInHand(context.getHand());
-			CompoundTag tag = stack.getOrCreateTag();
 
-			if (tag.contains("marker")) {
-				if (RegistryKey.of(Registry.DIMENSION, new Identifier(tag.getString("world_key"))) != world.getRegistryKey()) {
-					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.world"), true);
-					return ActionResult.FAIL;
-				}
+			if (stack.hasTag()) {
+				verifyTag(context.getPlayer(), context.getHand());
 
-				BlockPos marker1 = BlockPos.fromLong(tag.getLong("marker"));
-				tag.remove("marker");
-				BlockPos marker2 = context.getBlockPos();
+				ServerWorld world = (ServerWorld) context.getWorld();
 
-				UUID id = tag.getUuid("deed_id");
 
-				BlockBox newBox = new BlockBox(marker1, marker2);
+				CompoundTag tag = stack.getOrCreateTag();
 
-				LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
-				PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
+				if (tag.contains("marker")) {
+					if (RegistryKey.of(Registry.DIMENSION, new Identifier(tag.getString("world_key"))) != world.getRegistryKey()) {
+						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.world"), true);
+						return ActionResult.FAIL;
+					}
 
-				if (landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume)) {
-					double volume = landmark.volume();
-					landmark.makeSections();
-					tag.putDouble("volume", volume);
-					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
-					trackingComponent.sync();
-					return ActionResult.SUCCESS;
+					BlockPos marker1 = BlockPos.fromLong(tag.getLong("marker"));
+					tag.remove("marker");
+					BlockPos marker2 = context.getBlockPos();
+
+					UUID id = tag.getUuid("landmark_id");
+
+					BlockBox newBox = new BlockBox(marker1, marker2);
+
+					LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
+					PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
+
+					if (landmark.canModify(context.getPlayer())) {
+						if (landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume)) {
+							double volume = landmark.volume();
+							landmark.makeSections();
+							tag.putDouble("volume", volume);
+							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
+							trackingComponent.sync();
+							return ActionResult.SUCCESS;
+						} else {
+							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.volume", this.maxVolume), true);
+							return ActionResult.FAIL;
+						}
+					} else {
+						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.permissions"), true);
+						return ActionResult.FAIL;
+					}
 				} else {
-					context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.volume", this.maxVolume), true);
-					return ActionResult.FAIL;
+					if (!tag.contains("landmark_id")) {
+						PlayerLandmark landmark = new PlayerLandmark(world);
+						LandmarkTrackingComponent.add(world, landmark.withOwner(context.getPlayer()));
+						tag.putUuid("landmark_id", landmark.getId());
+					}
+
+					if (!tag.contains("world_key")) {
+						tag.putString("world_key", world.getRegistryKey().getValue().toString());
+					}
+
+					tag.putLong("marker", context.getBlockPos().asLong());
+					stack.setTag(tag);
 				}
 			} else {
-				if (!tag.contains("deed_id")) {
-					PlayerLandmark landmark = new PlayerLandmark(world);
-					LandmarkTrackingComponent.add(world, landmark.withOwner(context.getPlayer()));
-					tag.putUuid("deed_id", landmark.getId());
-				}
-
-				if (!tag.contains("world_key")) {
-					tag.putString("world_key", world.getRegistryKey().getValue().toString());
-				}
-
-				tag.putLong("marker", context.getBlockPos().asLong());
-				stack.setTag(tag);
+				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+				buf.writeEnumConstant(context.getHand());
+				ServerSidePacketRegistry.INSTANCE.sendToPlayer(context.getPlayer(), LandmarkNetworking.OPEN_CLAIM_SCREEN, buf);
 			}
 		}
 
@@ -113,8 +127,8 @@ public class DeedItem extends Item {
 
 		tooltip.add(new TranslatableText("item.landmark.deed.volume", volume, this.maxVolume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
 
-		if (tag != null && tag.contains("deed_name")) {
-			tooltip.add(Text.Serializer.fromJson(tag.getString("deed_name")));
+		if (tag != null && tag.contains("landmark_name")) {
+			tooltip.add(Text.Serializer.fromJson(tag.getString("landmark_name")));
 		}
 
 		super.appendTooltip(stack, world, tooltip, context);
@@ -122,43 +136,68 @@ public class DeedItem extends Item {
 
 	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-		CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
-
 		if (!world.isClient) {
-			if (!tag.contains("deed_id")) {
-				PlayerLandmark landmark = new PlayerLandmark(world);
-				LandmarkTrackingComponent.add((ServerWorld) world, landmark.withOwner(user));
-				tag.putUuid("deed_id", landmark.getId());
-			}
+			if (user.getStackInHand(hand).hasTag()) {
+				verifyTag(user, hand);
 
-			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-			buf.writeEnumConstant(hand);
-			buf.writeUuid(tag.getUuid("deed_id"));
-			ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, DEED_OPEN_EDIT_SCREEN, buf);
+				CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
+
+				if (!tag.contains("landmark_id")) {
+					PlayerLandmark landmark = new PlayerLandmark(world);
+					LandmarkTrackingComponent.add((ServerWorld) world, landmark.withOwner(user));
+					tag.putUuid("landmark_id", landmark.getId());
+				}
+
+				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+				buf.writeEnumConstant(hand);
+				buf.writeUuid(tag.getUuid("landmark_id"));
+				ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, LandmarkNetworking.OPEN_EDIT_SCREEN, buf);
+			} else {
+				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+				buf.writeEnumConstant(hand);
+				ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, LandmarkNetworking.OPEN_CLAIM_SCREEN, buf);
+			}
 		}
 
 		return super.use(world, user, hand);
 	}
 
+	private static void verifyTag(PlayerEntity user, Hand hand) {
+		CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
+		if (tag.contains("landmark_id") && tag.contains("world_key")) {
+			ServerWorld world = user.getEntityWorld().getServer().getWorld(RegistryKey.of(Registry.DIMENSION, new Identifier(tag.getString("world_key"))));
+			if (LandmarkTrackingComponent.of(world).get(tag.getUuid("landmark_id")) == null) {
+				user.setStackInHand(hand, new ItemStack(user.getStackInHand(hand).getItem()));
+			}
+		}
+	}
+
 	public static void saveName(PacketContext context, PacketByteBuf buf) {
 		UUID id = buf.readUuid();
-		Text name = buf.readText();
+		MutableText name = (MutableText) buf.readText();
 		Hand hand = buf.readEnumConstant(Hand.class);
 
 		context.getTaskQueue().execute(() -> {
+			verifyTag(context.getPlayer(), hand);
+
 			ItemStack stack = context.getPlayer().getStackInHand(hand);
 
 			if (stack.getItem() instanceof DeedItem) {
 				CompoundTag tag = stack.getOrCreateTag();
 				ServerWorld world = (ServerWorld) context.getPlayer().getEntityWorld();
 
-				if (tag.contains("deed_id") && tag.getUuid("deed_id").equals(id)) {
-					tag.putString("deed_name", Text.Serializer.toJson(name));
-					LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
-					PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
+				LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
+				PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(id);
 
-					landmark.setName(name);
-					landmark.makeSections();
+				if (tag.contains("landmark_id") && tag.getUuid("landmark_id").equals(id)) {
+					if (landmark.canModify(context.getPlayer())) {
+						tag.putString("landmark_name", Text.Serializer.toJson(name));
+
+						landmark.setName(name);
+						landmark.makeSections();
+					} else {
+						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.rename.fail"), true);
+					}
 				}
 			}
 		});

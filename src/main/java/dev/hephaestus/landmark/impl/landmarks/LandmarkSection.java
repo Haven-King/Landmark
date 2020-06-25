@@ -97,7 +97,7 @@ public class LandmarkSection implements Comparable<LandmarkSection> {
 	@Override
 	public int compareTo(LandmarkSection section) {
 		// This is backwards because we want them inserted into the queue in reverse order.
-		return Double.compare(section.volume, this.volume);
+		return Double.compare(section == null ? 0D : section.volume, this.volume);
 	}
 
 	public CompoundTag toTag(CompoundTag tag) {
@@ -144,8 +144,8 @@ public class LandmarkSection implements Comparable<LandmarkSection> {
 			if (dx < 300 && dy < 300 && dz < 300) {
 				CompoundTag tag = player.getMainHandStack().getOrCreateTag();
 
-				if (tag.contains("deed_id")) {
-					UUID id = tag.getUuid("deed_id");
+				if (tag.contains("landmark_id")) {
+					UUID id = tag.getUuid("landmark_id");
 					alpha = id.equals(this.parent) ? 1F : 0.25F;
 				}
 

@@ -8,10 +8,12 @@ import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.util.internal.ConcurrentSet;
 
 import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.math.BlockPos;
@@ -23,16 +25,16 @@ public abstract class Landmark {
 
 	private World world;
 	private UUID id;
-	private Text name;
+	private MutableText name;
 	private Vector3f color;
 
-	protected Landmark(World world, UUID id, Text name) {
+	protected Landmark(World world, UUID id, MutableText name) {
 		this.world = world;
 		this.id = id;
 		this.setName(name);
 	}
 
-	public final void setName(Text name) {
+	public final void setName(MutableText name) {
 		this.name = name;
 		TextColor color = this.name.getStyle().getColor();
 
@@ -60,12 +62,16 @@ public abstract class Landmark {
 		return this.id;
 	}
 
-	public final Text getName() {
+	public final MutableText getName() {
 		return this.name;
 	}
 
 	public final Vector3f getColor() {
 		return this.color;
+	}
+
+	public boolean canModify(PlayerEntity playerEntity) {
+		return playerEntity.hasPermissionLevel(2);
 	}
 
 	protected final Landmark with(UUID id) {
@@ -105,7 +111,7 @@ public abstract class Landmark {
 	public static Landmark from(World world, CompoundTag tag) {
 		String type = tag.getString("type");
 		UUID id = tag.getUuid("id");
-		Text name = Text.Serializer.fromJson(tag.getString("name"));
+		MutableText name = Text.Serializer.fromJson(tag.getString("name"));
 		switch (type) {
 		case "player":
 			return new PlayerLandmark(world, name).fromTag(world, tag).with(id);

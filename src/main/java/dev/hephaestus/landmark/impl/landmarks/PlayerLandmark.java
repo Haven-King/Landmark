@@ -9,6 +9,7 @@ import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.*;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
@@ -22,10 +23,10 @@ public class PlayerLandmark extends Landmark {
 	private HashSet<UUID> owners = new HashSet<>();
 
 	public PlayerLandmark(World world) {
-		this(world, LiteralText.EMPTY);
+		this(world, (MutableText) LiteralText.EMPTY);
 	}
 
-	public PlayerLandmark(World world, Text name) {
+	public PlayerLandmark(World world, MutableText name) {
 		super(world, UUID.randomUUID(), name);
 	}
 
@@ -164,7 +165,8 @@ public class PlayerLandmark extends Landmark {
 		return this.volume;
 	}
 
-	public boolean ownedBy(PlayerEntity playerEntity) {
-		return this.owners.contains(playerEntity.getUuid());
+	@Override
+	public boolean canModify(PlayerEntity playerEntity) {
+		return super.canModify(playerEntity) || this.owners.isEmpty() || this.owners.contains(playerEntity.getUuid());
 	}
 }

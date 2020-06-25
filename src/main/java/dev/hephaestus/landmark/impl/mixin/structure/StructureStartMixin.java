@@ -11,6 +11,7 @@ import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
+import net.minecraft.text.MutableText;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -68,7 +69,7 @@ public abstract class StructureStartMixin {
 				if (tracker.contains(this.getPos())) {
 					landmark = (GeneratedLandmark) tracker.get(this.getPos());
 				} else {
-					landmark = new GeneratedLandmark(world, this.getPos(), LiteralText.EMPTY);
+					landmark = new GeneratedLandmark(world, this.getPos(), (MutableText) LiteralText.EMPTY);
 					landmark.setName(NameGenerator.generate(type.getNameGeneratorId()));
 				}
 

@@ -1,12 +1,11 @@
 package dev.hephaestus.landmark.impl.world.chunk;
 
-import java.util.Collection;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.stream.Collectors;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
+import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
 import nerdhub.cardinal.components.api.component.Component;
@@ -57,7 +56,7 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 		}
 	}
 
-	public void remove(PlayerLandmark landmark) {
+	public void remove(Landmark landmark) {
 		this.landmarkSections.removeIf((section -> section.matches(landmark.getId())));
 	}
 
@@ -73,6 +72,10 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 		}
 
 		return null;
+	}
+
+	public List<UUID> getIds() {
+		return this.landmarkSections.stream().map(section -> section.parent).distinct().collect(Collectors.toList());
 	}
 
 	public static LandmarkChunkComponent of(Chunk chunk) {

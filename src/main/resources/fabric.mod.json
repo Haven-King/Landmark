@@ -11,10 +11,12 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.hephaestus.landmark.impl.LandmarkMod"
+      "dev.hephaestus.landmark.impl.LandmarkMod",
+      "dev.hephaestus.landmark.impl.network.LandmarkNetworking"
     ],
     "client": [
-      "dev.hephaestus.landmark.impl.LandmarkClient"
+      "dev.hephaestus.landmark.impl.LandmarkClient",
+      "dev.hephaestus.landmark.impl.network.LandmarkNetworking"
     ],
     "modmenu": [
       "dev.hephaestus.landmark.impl.LandmarkModMenuImplementation"

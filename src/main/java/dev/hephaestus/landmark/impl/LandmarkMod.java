@@ -4,6 +4,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import dev.hephaestus.landmark.impl.item.DeedItem;
+import dev.hephaestus.landmark.impl.item.EvictionNoticeItem;
 import dev.hephaestus.landmark.impl.util.LandmarkHandler;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
@@ -28,7 +29,6 @@ public class LandmarkMod implements ModInitializer {
 	public static final String MODID = "landmark";
 	public static final String MOD_NAME = "Landmark";
 	public static final Logger LOG = LogManager.getLogger(MOD_NAME);
-	public static final Identifier LANDMARK_DISCOVERED_PACKET = LandmarkMod.id("packet", "discovered");
 
 	public static final Executor EXECUTOR = Executors.newFixedThreadPool(8);
 
@@ -36,6 +36,8 @@ public class LandmarkMod implements ModInitializer {
 	public static final Item UNCOMMON_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON), 32768);
 	public static final Item RARE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.RARE), 262144);
 	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC), Integer.MAX_VALUE);
+
+	public static final Item EVITION_NOTICE = new EvictionNoticeItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC));
 
 	public static final ComponentType<LandmarkChunkComponent> CHUNK_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
 			id("component", "chunk"),
@@ -56,9 +58,6 @@ public class LandmarkMod implements ModInitializer {
 		NameGenerator.init();
 		LandmarkHandler.init();
 
-		ServerSidePacketRegistry.INSTANCE.register(DeedItem.DEED_SAVE_PACKET_ID, DeedItem::saveName);
-		ServerSidePacketRegistry.INSTANCE.register(LandmarkTrackingComponent.LANDMARK_DELETE_ID, LandmarkTrackingComponent::delete);
-
 		ChunkComponentCallback.EVENT.register(((chunk, componentContainer) -> componentContainer.put(CHUNK_COMPONENT, new LandmarkChunkComponent(chunk))));
 		WorldComponentCallback.EVENT.register(((world, componentContainer) -> componentContainer.put(TRACKING_COMPONENT, new LandmarkTrackingComponent(world))));
 
@@ -66,5 +65,6 @@ public class LandmarkMod implements ModInitializer {
 		Registry.register(Registry.ITEM, id("uncommon_deed"), UNCOMMON_DEED);
 		Registry.register(Registry.ITEM, id("rare_deed"), RARE_DEED);
 		Registry.register(Registry.ITEM, id("creative_deed"), CREATIVE_DEED);
+		Registry.register(Registry.ITEM, id("eviction_notice"), EVITION_NOTICE);
 	}
 }

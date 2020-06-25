@@ -2,12 +2,10 @@ package dev.hephaestus.landmark.impl.client;
 
 import java.util.UUID;
 
-import dev.hephaestus.landmark.impl.item.DeedItem;
-import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
+import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import io.netty.buffer.Unpooled;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -43,8 +41,8 @@ public class DeedEditScreen extends Screen {
 
 		CompoundTag tag = stack.getTag();
 
-		if (tag != null && tag.contains("deed_name")) {
-			text = Text.Serializer.fromJson(tag.getString("deed_name"));
+		if (tag != null && tag.contains("landmark_name")) {
+			text = Text.Serializer.fromJson(tag.getString("landmark_name"));
 			this.text = text == null ? new LiteralText("") : text;
 			this.textColor = text == null || text.getStyle() == null ? TextColor.fromFormatting(Formatting.WHITE) : text.getStyle().getColor();
 		} else {
@@ -84,8 +82,10 @@ public class DeedEditScreen extends Screen {
 			this.deleteButton = new ButtonWidget(width / 4, height / 2 + 14, width / 4 - 2, 20, new TranslatableText("deeds.landmark.delete").styled(style -> style.withColor(Formatting.RED)), action -> {
 				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 				buf.writeUuid(this.deedId);
+				buf.writeBoolean(true);
 				buf.writeEnumConstant(this.hand);
-				ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkTrackingComponent.LANDMARK_DELETE_ID, buf);
+				ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkNetworking.TRACKER_DELETE_LANDMARK, buf);
+				this.client.openScreen(null);
 			});
 
 			this.saveButton = new ButtonWidget(width / 2 + 2, height / 2 + 14, width / 4 - 2, 20, new TranslatableText("deeds.landmark.save"), action -> {
@@ -93,7 +93,7 @@ public class DeedEditScreen extends Screen {
 				buf.writeUuid(this.deedId);
 				buf.writeText(new LiteralText(nameField.getText()).styled((style) -> style.withColor(this.textColor)));
 				buf.writeEnumConstant(this.hand);
-				ClientSidePacketRegistry.INSTANCE.sendToServer(DeedItem.DEED_SAVE_PACKET_ID, buf);
+				ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkNetworking.SAVE_LANDMARK_NAME, buf);
 				client.openScreen(null);
 			});
 
@@ -106,7 +106,7 @@ public class DeedEditScreen extends Screen {
 
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		DrawableHelper.fill(matrices, 0, 0, 1000, 1000, 0x88000000);
+		fill(matrices, 0, 0, this.client.getWindow().getFramebufferWidth(),  this.client.getWindow().getFramebufferHeight(), 0x88000000);
 		this.nameField.render(matrices, mouseX, mouseY, delta);
 		this.colorField.render(matrices, mouseX, mouseY, delta);
 		this.deleteButton.render(matrices, mouseX, mouseY, delta);

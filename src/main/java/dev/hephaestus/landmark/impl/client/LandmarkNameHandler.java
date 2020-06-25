@@ -22,10 +22,6 @@ public class LandmarkNameHandler extends DrawableHelper {
 
 	private static int NAME_DISPLAY_TOTAL_TICKS = 0;
 
-	@Environment(EnvType.CLIENT)
-	public static void init() {
-		ClientSidePacketRegistry.INSTANCE.register(LandmarkMod.LANDMARK_DISCOVERED_PACKET, LandmarkNameHandler::accept); }
-
 	private static int duration() {
 		return (int) (CONFIG.namePopupFadeIn + CONFIG.namePopupDuration + CONFIG.namePopupFadeOut);
 	}
@@ -59,7 +55,7 @@ public class LandmarkNameHandler extends DrawableHelper {
 	}
 
 	@Environment(EnvType.CLIENT)
-	private static void accept(PacketContext context, PacketByteBuf buf) {
+	public static void accept(PacketContext context, PacketByteBuf buf) {
 		Text landmarkName = buf.readText();
 
 		// It's possible using the task queue here is unnecessary, but I'm not gonna mess around and find out

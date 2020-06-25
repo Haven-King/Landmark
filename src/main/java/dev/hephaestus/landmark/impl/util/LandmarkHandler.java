@@ -14,6 +14,7 @@ import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
+import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
@@ -69,7 +70,7 @@ public class LandmarkHandler {
 		if (landmark != null) {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 			buf.writeText(LandmarkTrackingComponent.of(this.playerEntity.getServerWorld()).getName(landmark));
-			ServerSidePacketRegistry.INSTANCE.sendToPlayer(this.playerEntity, LandmarkMod.LANDMARK_DISCOVERED_PACKET, buf);
+			ServerSidePacketRegistry.INSTANCE.sendToPlayer(this.playerEntity, LandmarkNetworking.ENTERED_LANDMARK, buf);
 			this.landmarkStatuses.put(landmark, 200);
 		}
 	}
