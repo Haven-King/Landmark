@@ -165,18 +165,17 @@ public abstract class Landmark {
 		Hand hand = buf.readEnumConstant(Hand.class);
 
 		context.getTaskQueue().execute(() -> {
-			DeedItem.verifyTag(context.getPlayer(), hand);
-
 			ItemStack stack = context.getPlayer().getStackInHand(hand);
 
 			if (stack.getItem() instanceof DeedItem) {
 				CompoundTag tag = stack.getOrCreateTag();
 				ServerWorld world = (ServerWorld) context.getPlayer().getEntityWorld();
+				DeedItem.Data data = new DeedItem.Data(world, context.getPlayer(), tag);
 
 				LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(world);
 				Landmark landmark = tracker.get(id);
 
-				if (tag.contains("landmark_id") && tag.getUuid("landmark_id").equals(id)) {
+				if (data.landmarkId.equals(id)) {
 					if (landmark.canModify(context.getPlayer())) {
 						tag.putString("landmark_name", Text.Serializer.toJson(name));
 						landmark.setName(name);

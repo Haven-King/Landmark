@@ -21,7 +21,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-public class DeedBuilderRenderer {
+public class BoundsRenderer {
 	@Environment(EnvType.CLIENT)
 	public static void render(BufferBuilderStorage bufferBuilders, MatrixStack matrices, ItemStack renderStack, Vec3d camPos) {
 		if (renderStack.getItem() instanceof DeedItem || renderStack.getItem() instanceof EvictionNoticeItem) {

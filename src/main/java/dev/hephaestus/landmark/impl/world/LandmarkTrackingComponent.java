@@ -3,6 +3,7 @@ package dev.hephaestus.landmark.impl.world;
 import com.google.common.collect.ConcurrentHashMultiset;
 import dev.hephaestus.landmark.impl.LandmarkClient;
 import dev.hephaestus.landmark.impl.LandmarkMod;
+import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
@@ -216,13 +217,11 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		Hand hand = packetByteBuf.readEnumConstant(Hand.class);
 
 		context.getTaskQueue().execute(() -> {
-			PlayerLandmark landmark = new PlayerLandmark(context.getPlayer().getEntityWorld());
-			LandmarkTrackingComponent.add((ServerWorld) context.getPlayer().getEntityWorld(), landmark.withOwner(context.getPlayer()));
-			context.getPlayer().getStackInHand(hand).getOrCreateTag().putUuid("landmark_id", landmark.getId());
+			DeedItem.Data data = new DeedItem.Data(context.getPlayer().getEntityWorld(), context.getPlayer(), context.getPlayer().getStackInHand(hand).getOrCreateTag());
 
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 			buf.writeEnumConstant(hand);
-			buf.writeUuid(landmark.getId());
+			buf.writeUuid(data.landmarkId);
 			ServerSidePacketRegistry.INSTANCE.sendToPlayer(context.getPlayer(), LandmarkNetworking.OPEN_EDIT_SCREEN, buf);
 		});
 	}

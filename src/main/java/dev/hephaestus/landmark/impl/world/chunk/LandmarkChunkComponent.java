@@ -64,15 +64,6 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 		return this.landmarkSections;
 	}
 
-	public UUID getMatches(Vec3d pos) {
-		for (LandmarkSection section : this.landmarkSections) {
-			if (section.contains(pos.x, pos.y, pos.z)) {
-				return section.parent;
-			}
-		}
-
-		return null;
-	}
 
 	public List<UUID> getIds() {
 		return this.landmarkSections.stream().map(section -> section.parent).distinct().collect(Collectors.toList());

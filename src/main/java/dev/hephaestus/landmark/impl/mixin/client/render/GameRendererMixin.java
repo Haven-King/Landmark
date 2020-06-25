@@ -1,7 +1,7 @@
 package dev.hephaestus.landmark.impl.mixin.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.hephaestus.landmark.impl.client.LandmarkNameHandler;
+import dev.hephaestus.landmark.impl.client.NameRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,7 +26,7 @@ public class GameRendererMixin {
 	private void renderNames(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
 		if (!this.client.skipGameRender && tick && this.client.world != null) {
 			RenderSystem.defaultAlphaFunc();
-			LandmarkNameHandler.draw(new MatrixStack());
+			NameRenderer.draw(new MatrixStack());
 			RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
 		}
 	}

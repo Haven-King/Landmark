@@ -3,14 +3,14 @@ package dev.hephaestus.landmark.impl.landmarks;
 import java.util.*;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
+import dev.hephaestus.landmark.impl.util.shape.VoxelShapeSerializer;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.*;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.shape.VoxelShape;
@@ -29,27 +29,16 @@ public class PlayerLandmark extends Landmark {
 		super(world, UUID.randomUUID(), name);
 	}
 
+	public PlayerLandmark(World world, UUID id) {
+		super(world, id, (MutableText) LiteralText.EMPTY);
+	}
+
 	@Override
 	public CompoundTag toTag(CompoundTag tag) {
 		tag.putString("type", "player");
 
 		if (this.shape != null) {
-			Collection<Box> boxes = this.shape.getBoundingBoxes();
-
-			tag.putInt("box_count", boxes.size());
-
-			ListTag boxesTag = tag.getList("boxes", 6);
-
-			for (Box box : boxes) {
-				boxesTag.add(DoubleTag.of(box.minX));
-				boxesTag.add(DoubleTag.of(box.minY));
-				boxesTag.add(DoubleTag.of(box.minZ));
-				boxesTag.add(DoubleTag.of(box.maxX));
-				boxesTag.add(DoubleTag.of(box.maxY));
-				boxesTag.add(DoubleTag.of(box.maxZ));
-			}
-
-			tag.put("boxes", boxesTag);
+			tag.put("shape", VoxelShapeSerializer.INSTANCE.toTag(new CompoundTag(), this.shape));
 		}
 
 		return super.toTag(tag);
@@ -61,26 +50,13 @@ public class PlayerLandmark extends Landmark {
 
 		this.volume = tag.getDouble("volume");
 
-		if (tag.contains("boxes") && tag.contains("box_count")) {
-			ListTag boxes = tag.getList("boxes", 6);
-
-			for (int i = 0; i < tag.getInt("box_count"); i += 6) {
-				VoxelShape newShape = VoxelShapes.cuboid(
-						boxes.getDouble(i),
-						boxes.getDouble(i + 1),
-						boxes.getDouble(i + 2),
-						boxes.getDouble(i + 3),
-						boxes.getDouble(i + 4),
-						boxes.getDouble(i + 5)
-				);
-				this.shape = this.shape == null ? newShape : VoxelShapes.union(this.shape, newShape);
-			}
-		}
+		this.shape = VoxelShapeSerializer.INSTANCE.fromTag(tag.getCompound("shape"));
+		this.makeSections();
 
 		return this;
 	}
 
-	public boolean add(LandmarkSection section, double maxVolume) {
+	public int add(LandmarkSection section, double maxVolume, boolean checks) {
 		VoxelShape added = VoxelShapes.cuboid(
 				section.minX,
 				section.minY,
@@ -89,6 +65,19 @@ public class PlayerLandmark extends Landmark {
 				section.maxY,
 				section.maxZ
 		);
+
+		VoxelShape comparison = VoxelShapes.cuboid(
+				section.minX - 1,
+				section.minY - 1,
+				section.minZ - 1,
+				section.maxX + 1,
+				section.maxY + 1,
+				section.maxZ + 1
+		);
+
+		if (!checks || (this.shape != null && !VoxelShapes.matchesAnywhere(comparison, this.shape, BooleanBiFunction.AND))) {
+			return 1;
+		}
 
 		VoxelShape newShape = this.shape == null ? added : VoxelShapes.union(this.shape, added);
 
@@ -102,16 +91,16 @@ public class PlayerLandmark extends Landmark {
 		}
 
 		if (volume <= maxVolume) {
-			this.shape = newShape.simplify();
+			this.shape = newShape/*.simplify()*/;
 			this.volume = volume;
-			return true;
+			return 0;
 		}
 
-		return false;
+		return 2;
 	}
 
 	public boolean add(LandmarkSection section) {
-		return this.add(section, Double.MAX_VALUE);
+		return this.add(section, Double.MAX_VALUE, false) == 0;
 	}
 
 	public void makeSections() {

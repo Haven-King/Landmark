@@ -4,7 +4,7 @@ import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.client.gui.EditScreen;
 import dev.hephaestus.landmark.impl.client.gui.DeletionScreen;
 import dev.hephaestus.landmark.impl.client.gui.ClaimScreen;
-import dev.hephaestus.landmark.impl.client.LandmarkNameHandler;
+import dev.hephaestus.landmark.impl.client.NameRenderer;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import net.fabricmc.api.ClientModInitializer;
@@ -41,7 +41,7 @@ public class LandmarkNetworking implements ModInitializer, ClientModInitializer 
 		ClientSidePacketRegistry.INSTANCE.register(OPEN_DELETION_SCREEN, DeletionScreen::new);
 		ClientSidePacketRegistry.INSTANCE.register(OPEN_CLAIM_SCREEN, ClaimScreen::new);
 		ClientSidePacketRegistry.INSTANCE.register(TRACKER_SYNC, LandmarkTrackingComponent::read);
-		ClientSidePacketRegistry.INSTANCE.register(ENTERED_LANDMARK, LandmarkNameHandler::accept);
+		ClientSidePacketRegistry.INSTANCE.register(ENTERED_LANDMARK, NameRenderer::accept);
 	}
 
 	private static Identifier packetId(String... args) {

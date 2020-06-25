@@ -17,7 +17,7 @@ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.PacketContext;
 
 @Environment(EnvType.CLIENT)
-public class LandmarkNameHandler extends DrawableHelper {
+public class NameRenderer extends DrawableHelper {
 	private static Text NAME;
 
 	private static int NAME_DISPLAY_TOTAL_TICKS = 0;
