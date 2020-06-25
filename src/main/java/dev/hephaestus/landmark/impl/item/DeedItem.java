@@ -18,6 +18,7 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -33,6 +34,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -135,6 +137,10 @@ public class DeedItem extends Item {
 
 		if (tag != null && tag.contains("landmark_name")) {
 			tooltip.add(Text.Serializer.fromJson(tag.getString("landmark_name")));
+		}
+
+		if (tag != null && tag.contains("landmark_id") && FabricLoader.getInstance().isDevelopmentEnvironment()) {
+			tooltip.add(new LiteralText(tag.getUuid("landmark_id").toString()));
 		}
 
 		super.appendTooltip(stack, world, tooltip, context);

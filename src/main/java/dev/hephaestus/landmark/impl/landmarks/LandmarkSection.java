@@ -56,9 +56,9 @@ public class LandmarkSection implements Comparable<LandmarkSection> {
 		this.volume = (this.maxX - this.minX) * (this.maxY - this.minY) * (this.maxZ - this.minZ);
 		chunks = new HashSet<>();
 
-		for (double x = minX; x <= maxX; x += 16) {
-			for (double z = minZ; z <= maxZ; z += 16) {
-				this.chunks.add(new ChunkPos((int) x >> 4, (int) z >> 4));
+		for (int x = (int) minX >> 4; x <= (int) maxX >> 4; ++x) {
+			for (int z = (int) minZ >> 4; z <= (int) maxZ >> 4; ++z) {
+				this.chunks.add(new ChunkPos(x, z));
 			}
 		}
 	}
