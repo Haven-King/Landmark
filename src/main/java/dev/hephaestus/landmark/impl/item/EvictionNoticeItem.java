@@ -26,4 +26,9 @@ public class EvictionNoticeItem extends Item {
 
 		return TypedActionResult.success(user.getStackInHand(hand));
 	}
+
+	@Override
+	public boolean hasGlint(ItemStack stack) {
+		return true;
+	}
 }

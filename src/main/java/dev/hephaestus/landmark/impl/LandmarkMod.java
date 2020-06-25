@@ -13,6 +13,8 @@ import nerdhub.cardinal.components.api.ComponentRegistry;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.event.ChunkComponentCallback;
 import nerdhub.cardinal.components.api.event.WorldComponentCallback;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
+import net.minecraft.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,10 +33,12 @@ public class LandmarkMod implements ModInitializer {
 
 	public static final Executor EXECUTOR = Executors.newFixedThreadPool(8);
 
-	public static final Item COMMON_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.COMMON), 4096);
-	public static final Item UNCOMMON_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON), 32768);
-	public static final Item RARE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.RARE), 262144);
-	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC), Double.MAX_VALUE);
+	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(id("items")).icon(() -> new ItemStack(LandmarkMod.COMMON_DEED)).build();
+
+	public static final Item COMMON_DEED = new DeedItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.COMMON), 4096);
+	public static final Item UNCOMMON_DEED = new DeedItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.UNCOMMON), 32768);
+	public static final Item RARE_DEED = new DeedItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.RARE), 262144);
+	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.EPIC), Double.MAX_VALUE);
 
 	public static final Item EVITION_NOTICE = new EvictionNoticeItem(new Item.Settings().group(ItemGroup.MISC).rarity(Rarity.EPIC));
 

@@ -21,11 +21,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -42,6 +38,11 @@ public class DeedItem extends Item {
 	public DeedItem(Settings settings, double maxVolume) {
 		super(settings);
 		this.maxVolume = maxVolume;
+	}
+
+	@Override
+	public boolean hasGlint(ItemStack stack) {
+		return stack.getRarity() == Rarity.EPIC;
 	}
 
 	@Override

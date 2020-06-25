@@ -6,6 +6,7 @@
   "item.landmark.eviction_notice": "Eviction Notice",
   "item.landmark.deed.volume": "Volume: %d/%d",
   "item.landmark.deed.volume.creative": "Volume: %d",
+  "itemGroup.landmark.items": "Landmark",
   "deeds.landmark.fail.permissions": "You don't have permission to modify this landmark!",
   "deeds.landmark.fail.world": "This deed has already been used in another world!",
   "deeds.landmark.fail.volume": "This operation would make the landmark exceed its maximum volume of %d!",
