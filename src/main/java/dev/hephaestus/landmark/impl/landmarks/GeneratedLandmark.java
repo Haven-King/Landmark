@@ -10,7 +10,6 @@ import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;

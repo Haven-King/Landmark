@@ -1,16 +1,17 @@
 package dev.hephaestus.landmark.impl.util.shape;
 
+import java.util.function.DoubleConsumer;
+
 import dev.hephaestus.landmark.impl.util.Taggable;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.shape.ArrayVoxelShape;
 import net.minecraft.util.shape.BitSetVoxelSet;
-
-import java.util.function.DoubleConsumer;
 
 public class ArrayVoxelShapeSerializer implements Taggable<ArrayVoxelShape> {
 	public static final ArrayVoxelShapeSerializer INSTANCE = new ArrayVoxelShapeSerializer();
@@ -24,8 +25,9 @@ public class ArrayVoxelShapeSerializer implements Taggable<ArrayVoxelShape> {
 	private static DoubleList getDoubleList(CompoundTag tag, String key) {
 		DoubleList list = new DoubleArrayList();
 		ListTag listTag = tag.getList(key, 6);
+
 		for (Tag t : listTag) {
-			list.add(((DoubleTag)t).getDouble());
+			list.add(((DoubleTag) t).getDouble());
 		}
 
 		return list;

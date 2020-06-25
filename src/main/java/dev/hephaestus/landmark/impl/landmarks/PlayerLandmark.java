@@ -1,17 +1,19 @@
 package dev.hephaestus.landmark.impl.landmarks;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.util.shape.VoxelShapeSerializer;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.function.BooleanBiFunction;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;

@@ -9,11 +9,14 @@ import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.util.internal.ConcurrentSet;
 
-import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.LongTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
@@ -25,10 +28,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
+import net.fabricmc.fabric.api.network.PacketContext;
+
 public abstract class Landmark {
 	protected final Collection<ChunkPos> chunks = new ConcurrentSet<>();
 	private HashSet<UUID> owners = new HashSet<>();
-
 
 	private World world;
 	private UUID id;
@@ -104,6 +108,7 @@ public abstract class Landmark {
 		tag.put("chunks", chunks);
 
 		ListTag owners = tag.getList("owners", 8);
+
 		for (UUID owner : this.owners) {
 			owners.add(StringTag.of(owner.toString()));
 		}
@@ -124,6 +129,7 @@ public abstract class Landmark {
 
 		this.owners = new HashSet<>();
 		ListTag owners = tag.getList("owners", 8);
+
 		for (Tag owner : owners) {
 			this.owners.add(UUID.fromString(owner.asString()));
 		}
@@ -135,6 +141,7 @@ public abstract class Landmark {
 		String type = tag.getString("type");
 		UUID id = tag.getUuid("id");
 		MutableText name = Text.Serializer.fromJson(tag.getString("name"));
+
 		if ("player".equals(type)) {
 			return new PlayerLandmark(world, name).fromTag(world, tag).with(id);
 		} else {

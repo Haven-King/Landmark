@@ -1,5 +1,8 @@
 package dev.hephaestus.landmark.impl.client.gui;
 
+import java.util.List;
+import java.util.UUID;
+
 import dev.hephaestus.landmark.impl.client.gui.widget.LandmarkButtonWidget;
 import dev.hephaestus.landmark.impl.client.gui.widget.TextWidget;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
@@ -7,8 +10,7 @@ import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.network.PacketByteBuf;
@@ -16,8 +18,8 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 
-import java.util.List;
-import java.util.UUID;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
 
 public class ClaimScreen extends LandmarkScreen {
 	private final Hand hand;
@@ -34,8 +36,10 @@ public class ClaimScreen extends LandmarkScreen {
 
 		if (this.client != null) {
 			LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(this.client.world);
+
 			if (this.client.world != null && this.client.player != null) {
 				List<UUID> sections = LandmarkChunkComponent.of(this.client.world.getChunk(this.client.player.chunkX, this.client.player.chunkZ)).getIds();
+
 				for (int i = 0; i < sections.size(); ++i) {
 					Landmark landmark = tracker.get(sections.get(i));
 

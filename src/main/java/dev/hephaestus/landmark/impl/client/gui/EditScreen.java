@@ -9,7 +9,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
@@ -37,6 +36,7 @@ public class EditScreen extends LandmarkScreen {
 		this.deedId = buf.readUuid();
 
 		CompoundTag tag = playerEntity.getStackInHand(hand).getTag();
+
 		if (tag != null && tag.contains("landmark_name")) {
 			Text text = Text.Serializer.fromJson(tag.getString("landmark_name"));
 			this.text = text == null ? new LiteralText("") : text;

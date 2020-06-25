@@ -45,6 +45,7 @@ public class BoundsRenderer {
 					section.render(matrices, vertexConsumer);
 				}
 			}
+
 			matrices.pop();
 		}
 	}

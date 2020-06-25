@@ -10,7 +10,6 @@ import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
-import net.minecraft.text.MutableText;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import net.minecraft.text.MutableText;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;

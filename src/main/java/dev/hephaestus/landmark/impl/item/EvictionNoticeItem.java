@@ -2,7 +2,7 @@ package dev.hephaestus.landmark.impl.item;
 
 import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -11,8 +11,9 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 
-public class EvictionNoticeItem extends Item {
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
+public class EvictionNoticeItem extends Item {
 	public EvictionNoticeItem(Settings settings) {
 		super(settings);
 	}

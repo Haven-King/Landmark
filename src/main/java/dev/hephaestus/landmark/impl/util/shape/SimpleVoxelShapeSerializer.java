@@ -1,6 +1,7 @@
 package dev.hephaestus.landmark.impl.util.shape;
 
 import dev.hephaestus.landmark.impl.util.Taggable;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.shape.BitSetVoxelSet;
 import net.minecraft.util.shape.SimpleVoxelShape;

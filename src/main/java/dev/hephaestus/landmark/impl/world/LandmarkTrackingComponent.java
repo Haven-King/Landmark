@@ -1,5 +1,10 @@
 package dev.hephaestus.landmark.impl.world;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.google.common.collect.ConcurrentHashMultiset;
 import dev.hephaestus.landmark.impl.LandmarkClient;
 import dev.hephaestus.landmark.impl.LandmarkMod;
@@ -11,10 +16,7 @@ import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
 import nerdhub.cardinal.components.api.util.sync.WorldSyncedComponent;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.PacketContext;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
@@ -28,18 +30,18 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.network.PacketContext;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
 public class LandmarkTrackingComponent implements WorldSyncedComponent {
-
 	private final World world;
+
+	private final ConcurrentHashMap<BlockPos, Landmark> generatedLandmarks = new ConcurrentHashMap<>();
 
 	private ConcurrentHashMap<UUID, Landmark> landmarks = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<ChunkPos, ConcurrentHashMultiset<Landmark>> searcher = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<BlockPos, Landmark> generatedLandmarks = new ConcurrentHashMap<>();
 
 	public LandmarkTrackingComponent(World world) {
 		this.world = world;
@@ -162,6 +164,7 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		UUID id = buf.readUuid();
 		boolean wasEditScreen = buf.readBoolean();
 		Hand hand = null;
+
 		if (wasEditScreen) {
 			hand = buf.readEnumConstant(Hand.class);
 		}
@@ -179,9 +182,11 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 				}
 
 				tracker.landmarks.remove(id);
+
 				if (finalHand != null) {
 					context.getPlayer().setStackInHand(finalHand, new ItemStack(context.getPlayer().getStackInHand(finalHand).getItem()));
 				}
+
 				tracker.sync();
 			} else {
 				context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.delete.fail", new TranslatableText("deeds.landmark.fail.permissions")), true);
@@ -196,6 +201,7 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		context.getTaskQueue().execute(() -> {
 			LandmarkTrackingComponent tracker = of(context.getPlayer().getEntityWorld());
 			Landmark landmark = tracker.get(id);
+
 			if (landmark != null && landmark.canModify(context.getPlayer())) {
 				landmark.withOwner(context.getPlayer());
 				CompoundTag tag = context.getPlayer().getStackInHand(hand).getOrCreateTag();

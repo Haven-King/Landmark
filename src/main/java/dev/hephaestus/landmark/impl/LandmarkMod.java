@@ -23,7 +23,6 @@ import net.minecraft.util.Rarity;
 import net.minecraft.util.registry.Registry;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
 public class LandmarkMod implements ModInitializer {
 	public static final String MODID = "landmark";

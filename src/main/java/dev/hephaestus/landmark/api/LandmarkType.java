@@ -3,10 +3,8 @@ package dev.hephaestus.landmark.api;
 import dev.hephaestus.landmark.impl.names.NameGenerator;
 import dev.hephaestus.landmark.impl.util.LandmarkLocationPredicate;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;

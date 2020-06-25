@@ -1,6 +1,7 @@
 package dev.hephaestus.landmark.impl.util.shape;
 
 import dev.hephaestus.landmark.impl.util.Taggable;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.shape.ArrayVoxelShape;
 import net.minecraft.util.shape.SimpleVoxelShape;
@@ -28,9 +29,9 @@ public class VoxelShapeSerializer implements Taggable<VoxelShape> {
 	@Override
 	public VoxelShape fromTag(CompoundTag tag) {
 		switch (tag.getString("type")) {
-			case "array": return ArrayVoxelShapeSerializer.INSTANCE.fromTag(tag);
-			case "simple": return SimpleVoxelShapeSerializer.INSTANCE.fromTag(tag);
-			default: return null;
+		case "array": return ArrayVoxelShapeSerializer.INSTANCE.fromTag(tag);
+		case "simple": return SimpleVoxelShapeSerializer.INSTANCE.fromTag(tag);
+		default: return null;
 		}
 	}
 }

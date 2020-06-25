@@ -37,7 +37,6 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
 public class DeedItem extends Item {
-
 	private final double maxVolume;
 
 	public DeedItem(Settings settings, double maxVolume) {
@@ -76,12 +75,12 @@ public class DeedItem extends Item {
 
 					if (landmark.canModify(context.getPlayer())) {
 						int result = landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume, true);
+
 						if (result == 0) {
 							double volume = landmark.volume();
 							landmark.makeSections();
 							tag.putDouble("volume", volume);
 							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
-//							trackingComponent.sync();
 							return ActionResult.SUCCESS;
 						} else if (result == 1) {
 							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.overlap", this.maxVolume), true);
@@ -122,7 +121,7 @@ public class DeedItem extends Item {
 
 		if (tag != null && (!tag.contains("is_generated") || !tag.getBoolean("is_generated"))) {
 			if (this.maxVolume < Double.MAX_VALUE) {
-				tooltip.add(new TranslatableText("item.landmark.deed.volume", volume, (int)this.maxVolume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
+				tooltip.add(new TranslatableText("item.landmark.deed.volume", volume, (int) this.maxVolume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
 			} else {
 				tooltip.add(new TranslatableText("item.landmark.deed.volume.creative", volume).styled((style) -> style.withItalic(true).withColor(Formatting.DARK_GRAY)));
 			}
@@ -177,9 +176,11 @@ public class DeedItem extends Item {
 					this.marker = tag.contains("marker") ? BlockPos.fromLong(tag.getLong("marker")) : null;
 				} else {
 					Landmark landmark = new PlayerLandmark(world, this.landmarkId);
+
 					if (player != null) {
 						landmark = landmark.withOwner(player);
 					}
+
 					LandmarkTrackingComponent.add((ServerWorld) world, landmark);
 					tag.putUuid("landmark_id", this.landmarkId);
 
@@ -199,9 +200,11 @@ public class DeedItem extends Item {
 				}
 			} else {
 				Landmark landmark = new PlayerLandmark(world);
+
 				if (player != null) {
 					landmark = landmark.withOwner(player);
 				}
+
 				LandmarkTrackingComponent.add((ServerWorld) world, landmark);
 				tag.putUuid("landmark_id", landmark.getId());
 				this.landmarkId = landmark.getId();

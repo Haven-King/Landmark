@@ -1,12 +1,13 @@
 package dev.hephaestus.landmark.impl.client.gui.widget;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 public class TextWidget implements Drawable, Element {
@@ -15,7 +16,6 @@ public class TextWidget implements Drawable, Element {
 	private final float x;
 	private final float y;
 	private final int color;
-
 
 	public TextWidget(TextRenderer textRenderer, Text text, float x, float y, int color) {
 		this.textRenderer = textRenderer;

@@ -2,8 +2,6 @@ package dev.hephaestus.landmark.impl.client;
 
 import static dev.hephaestus.landmark.impl.LandmarkClient.CONFIG;
 
-import dev.hephaestus.landmark.impl.LandmarkMod;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -13,7 +11,6 @@ import net.minecraft.text.Text;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.PacketContext;
 
 @Environment(EnvType.CLIENT)

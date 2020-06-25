@@ -1,9 +1,10 @@
 package dev.hephaestus.landmark.impl.util.shape;
 
-import dev.hephaestus.landmark.impl.util.Taggable;
-import net.minecraft.nbt.CompoundTag;
-
 import java.util.BitSet;
+
+import dev.hephaestus.landmark.impl.util.Taggable;
+
+import net.minecraft.nbt.CompoundTag;
 
 public class BitSetSerializer implements Taggable<BitSet> {
 	public static final BitSetSerializer INSTANCE = new BitSetSerializer();

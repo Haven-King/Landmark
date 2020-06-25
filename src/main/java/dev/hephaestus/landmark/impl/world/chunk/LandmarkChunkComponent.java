@@ -1,6 +1,10 @@
 package dev.hephaestus.landmark.impl.world.chunk;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
@@ -63,7 +67,6 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 	public Collection<LandmarkSection> getSections() {
 		return this.landmarkSections;
 	}
-
 
 	public List<UUID> getIds() {
 		return this.landmarkSections.stream().map(section -> section.parent).distinct().collect(Collectors.toList());
