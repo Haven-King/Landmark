@@ -58,7 +58,7 @@ public class ClaimScreen extends LandmarkScreen {
 					}
 				}
 
-				ButtonWidget newLandmark = new ButtonWidget(width / 2 - 100, height / 10 + 24 * (this.buttons.size() + 1), 200, 20, new TranslatableText("deeds.landmark.create").styled(style -> style.withColor(Formatting.GREEN)), (action) -> {
+				ButtonWidget newLandmark = new ButtonWidget(width / 2 - 100, width / 10 + 24 * this.buttons.size(), 200, 20, new TranslatableText("deeds.landmark.create").styled(style -> style.withColor(Formatting.GREEN)), (action) -> {
 					PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 					buf.writeEnumConstant(this.hand);
 					ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkNetworking.TRACKER_NEW_LANDMARK, buf);

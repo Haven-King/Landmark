@@ -206,6 +206,7 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 				landmark.withOwner(context.getPlayer());
 				CompoundTag tag = context.getPlayer().getStackInHand(hand).getOrCreateTag();
 				tag.putUuid("landmark_id", id);
+				tag.putString("world_key", context.getPlayer().getEntityWorld().getRegistryKey().getValue().toString());
 				tag.putString("landmark_name", Text.Serializer.toJson(landmark.getName()));
 
 				if (landmark instanceof GeneratedLandmark) {
