@@ -13,6 +13,8 @@ import nerdhub.cardinal.components.api.ComponentRegistry;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.event.ChunkComponentCallback;
 import nerdhub.cardinal.components.api.event.WorldComponentCallback;
+import net.minecraft.util.registry.RegistryTracker;
+import net.minecraft.world.dimension.DimensionType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,6 +43,8 @@ public class LandmarkMod implements ModInitializer {
 	public static final Item CREATIVE_DEED = new DeedItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.EPIC), Double.MAX_VALUE);
 
 	public static final Item EVITION_NOTICE = new EvictionNoticeItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.EPIC));
+
+	public static Registry<DimensionType> DIMENSION_TYPE_REGISTRY = null;
 
 	public static final ComponentType<LandmarkChunkComponent> CHUNK_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
 			id("component", "chunk"),

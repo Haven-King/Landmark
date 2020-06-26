@@ -12,6 +12,9 @@ import net.minecraft.world.ServerWorldAccess;
 
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 public class LandmarkTypeRegistry {
 	private static final RegistryKey<Registry<LandmarkType>> KEY = RegistryKey.ofRegistry(LandmarkMod.id("landmarks"));
 	private static final SimpleRegistry<LandmarkType> REGISTRY = FabricRegistryBuilder.createSimple(LandmarkType.class, LandmarkMod.id("landmarks")).buildAndRegister();
@@ -24,6 +27,10 @@ public class LandmarkTypeRegistry {
 
 	public static LandmarkType get(Identifier id) {
 		return REGISTRY.get(id);
+	}
+
+	public static Iterator<LandmarkType> getRegistered() {
+		return REGISTRY.iterator();
 	}
 
 	public static LandmarkType get(StructureStart<?> structureStart, ServerWorldAccess world) {

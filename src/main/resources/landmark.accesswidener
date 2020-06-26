@@ -1,15 +1,12 @@
 accessWidener  v1  named
-accessible  method  net/minecraft/util/shape/ArrayVoxelShape    <init>  (Lnet/minecraft/util/shape/VoxelSet;Lit/unimi/dsi/fastutil/doubles/DoubleList;Lit/unimi/dsi/fastutil/doubles/DoubleList;Lit/unimi/dsi/fastutil/doubles/DoubleList;)V
-accessible  method  net/minecraft/util/shape/SimpleVoxelShape   <init>  (Lnet/minecraft/util/shape/VoxelSet;)V
-
-accessible  field  net/minecraft/util/shape/BitSetVoxelSet  storage  Ljava/util/BitSet;
-mutable  field  net/minecraft/util/shape/BitSetVoxelSet  storage  Ljava/util/BitSet;
-
-accessible  field  net/minecraft/util/shape/ArrayVoxelShape  xPoints  Lit/unimi/dsi/fastutil/doubles/DoubleList;
-accessible  field  net/minecraft/util/shape/ArrayVoxelShape  yPoints  Lit/unimi/dsi/fastutil/doubles/DoubleList;
-accessible  field  net/minecraft/util/shape/ArrayVoxelShape  zPoints  Lit/unimi/dsi/fastutil/doubles/DoubleList;
-
-accessible  field   net/minecraft/util/shape/VoxelShape         voxels  Lnet/minecraft/util/shape/VoxelSet;
-accessible  field   net/minecraft/client/world/ClientChunkManager   chunks  Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;
-accessible  field   net/minecraft/client/world/ClientChunkManager$ClientChunkMap  chunks  Ljava/util/concurrent/atomic/AtomicReferenceArray;
-accessible  field   net/minecraft/text/TextColor    rgb  I
+accessible  method  net/minecraft/util/shape/ArrayVoxelShape                        <init>      (Lnet/minecraft/util/shape/VoxelSet;Lit/unimi/dsi/fastutil/doubles/DoubleList;Lit/unimi/dsi/fastutil/doubles/DoubleList;Lit/unimi/dsi/fastutil/doubles/DoubleList;)V
+accessible  method  net/minecraft/util/shape/SimpleVoxelShape                       <init>      (Lnet/minecraft/util/shape/VoxelSet;)V
+accessible  field  net/minecraft/util/shape/BitSetVoxelSet                          storage     Ljava/util/BitSet;
+mutable  field  net/minecraft/util/shape/BitSetVoxelSet                             storage     Ljava/util/BitSet;
+accessible  field  net/minecraft/util/shape/ArrayVoxelShape                         xPoints     Lit/unimi/dsi/fastutil/doubles/DoubleList;
+accessible  field  net/minecraft/util/shape/ArrayVoxelShape                         yPoints     Lit/unimi/dsi/fastutil/doubles/DoubleList;
+accessible  field  net/minecraft/util/shape/ArrayVoxelShape                         zPoints     Lit/unimi/dsi/fastutil/doubles/DoubleList;
+accessible  field   net/minecraft/util/shape/VoxelShape                             voxels      Lnet/minecraft/util/shape/VoxelSet;
+accessible  field   net/minecraft/client/world/ClientChunkManager                   chunks      Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;
+accessible  field   net/minecraft/client/world/ClientChunkManager$ClientChunkMap    chunks      Ljava/util/concurrent/atomic/AtomicReferenceArray;
+accessible  field   net/minecraft/text/TextColor                                    rgb         I

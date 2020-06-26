@@ -26,10 +26,12 @@ public class NameGenerator {
 	private static final RegistryKey<Registry<NameComponentProvider>> KEY = RegistryKey.ofRegistry(LandmarkMod.id("name", "providers"));
 	private static SimpleRegistry<NameComponentProvider> REGISTRY = new SimpleRegistry<>(KEY, Lifecycle.stable());
 
-	public static void register(NameComponentProvider provider) {
+	public static NameComponentProvider register(NameComponentProvider provider) {
 		if (!REGISTRY.containsId(provider.getId())) {
 			REGISTRY.add(RegistryKey.of(KEY, provider.getId()), provider);
 		}
+
+		return REGISTRY.get(provider.getId());
 	}
 
 	public static MutableText generate(Identifier id) {

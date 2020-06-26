@@ -1,0 +1,7 @@
+{
+  "name": "dimension.landmark.the_nether",
+  "color": "#ff8800",
+  "location": {
+    "dimension": "minecraft:the_nether"
+  }
+}

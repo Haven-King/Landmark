@@ -1,10 +1,7 @@
 package dev.hephaestus.landmark.impl.util;
 
 import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.JsonElement;
@@ -14,6 +11,9 @@ import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
+import dev.hephaestus.landmark.impl.names.NameGenerator;
+import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
+import dev.hephaestus.landmark.impl.names.provider.types.Translatable;
 import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
@@ -23,6 +23,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -30,10 +31,14 @@ import net.minecraft.util.Identifier;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.Pair;
 
 public class LandmarkHandler {
 	private final ServerPlayerEntity playerEntity;
 	private final ConcurrentHashMap<UUID, Integer> landmarkStatuses = new ConcurrentHashMap<>();
+
+	private final ConcurrentHashMap<Identifier, Boolean> otherLandmarkStatuses = new ConcurrentHashMap<>();
 
 	public LandmarkHandler(ServerPlayerEntity playerEntity) {
 		this.playerEntity = playerEntity;
@@ -44,36 +49,49 @@ public class LandmarkHandler {
 
 		double x = this.playerEntity.getPos().x, y = this.playerEntity.getPos().y, z = this.playerEntity.getPos().z;
 
-		UUID landmark = null;
+		Text text = null;
 		HashMap<UUID, Boolean> landmarks = new HashMap<>();
 
-		for (LandmarkSection section : container.getSections()) {
-			boolean bl = section.contains(x, y, z);
-			landmarks.put(section.parent, landmarks.getOrDefault(section.parent, false) || bl);
+		for (Iterator<LandmarkType> it = LandmarkTypeRegistry.getRegistered(); it.hasNext(); ) {
+			LandmarkType type = it.next();
 
-			if (bl && landmark == null && !this.landmarkStatuses.containsKey(section.parent)) {
-				landmark = section.parent;
-				this.landmarkStatuses.put(section.parent, 200);
+			Pair<Integer, LandmarkType> testResults = type.test(null, playerEntity.getBlockPos(), playerEntity.getServerWorld());
+			if (testResults.getLeft() >= 0 && !otherLandmarkStatuses.containsKey(type.getId())) {
+				text = type.generateName();
+				this.otherLandmarkStatuses.put(type.getId(), true);
+			} else if (testResults.getLeft() < 0 && otherLandmarkStatuses.containsKey(type.getId())) {
+				this.otherLandmarkStatuses.remove(type.getId());
 			}
 		}
 
-		for (Map.Entry<UUID, Integer> entry : this.landmarkStatuses.entrySet()) {
-			if (!landmarks.getOrDefault(entry.getKey(), false)) {
-				int i = entry.getValue() - 1;
+		if (text == null) {
+			for (LandmarkSection section : container.getSections()) {
+				boolean bl = section.contains(x, y, z);
+				landmarks.put(section.parent, landmarks.getOrDefault(section.parent, false) || bl);
 
-				if (i <= 0) {
-					this.landmarkStatuses.remove(entry.getKey());
-				} else {
-					this.landmarkStatuses.put(entry.getKey(), i);
+				if (bl && text == null && !this.landmarkStatuses.containsKey(section.parent)) {
+					text = LandmarkTrackingComponent.of(this.playerEntity.getServerWorld()).getName(section.parent);
+					this.landmarkStatuses.put(section.parent, 200);
+				}
+			}
+
+			for (Map.Entry<UUID, Integer> entry : this.landmarkStatuses.entrySet()) {
+				if (!landmarks.getOrDefault(entry.getKey(), false)) {
+					int i = entry.getValue() - 1;
+
+					if (i <= 0) {
+						this.landmarkStatuses.remove(entry.getKey());
+					} else {
+						this.landmarkStatuses.put(entry.getKey(), i);
+					}
 				}
 			}
 		}
 
-		if (landmark != null) {
+		if (text != null) {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-			buf.writeText(LandmarkTrackingComponent.of(this.playerEntity.getServerWorld()).getName(landmark));
+			buf.writeText(text);
 			ServerSidePacketRegistry.INSTANCE.sendToPlayer(this.playerEntity, LandmarkNetworking.ENTERED_LANDMARK, buf);
-			this.landmarkStatuses.put(landmark, 200);
 		}
 	}
 
@@ -115,16 +133,23 @@ public class LandmarkHandler {
 
 						LandmarkType type = new LandmarkType(id, predicate, color);
 
-						JsonElement nameGenerator = jsonObject.get("name_generator");
+						if (jsonObject.has("name_generator")) {
+							JsonElement nameGenerator = jsonObject.get("name_generator");
 
-						if (nameGenerator.isJsonPrimitive() && nameGenerator.getAsJsonPrimitive().isString()) {
-							type.addNameGenerator(new Identifier(jsonObject.get("name_generator").getAsString()));
-						} else if (nameGenerator.isJsonArray()) {
-							for (JsonElement element : nameGenerator.getAsJsonArray()) {
-								if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
-									type.addNameGenerator(new Identifier(element.getAsString()));
+							if (nameGenerator.isJsonPrimitive() && nameGenerator.getAsJsonPrimitive().isString()) {
+								type.addNameGenerator(new Identifier(jsonObject.get("name_generator").getAsString()));
+							} else if (nameGenerator.isJsonArray()) {
+								for (JsonElement element : nameGenerator.getAsJsonArray()) {
+									if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
+										type.addNameGenerator(new Identifier(element.getAsString()));
+									}
 								}
 							}
+						}
+
+						if (jsonObject.has("name")) {
+							NameComponentProvider generator = NameGenerator.register(new Translatable(id, JsonHelper.getString(jsonObject, "name")));
+							type.addNameGenerator(generator.getId());
 						}
 
 						LandmarkTypeRegistry.register(type);

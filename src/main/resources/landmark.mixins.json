@@ -5,7 +5,8 @@
   "mixins": [
     "entity.ServerPlayerEntityMixin",
     "server.world.ThreadedAnvilChunkStorageMixin",
-    "structure.StructureStartMixin"
+    "structure.StructureStartMixin",
+    "util.registry.RegistryTrackerModifiableMixin"
   ],
   "client": [
     "client.render.GameRendererMixin",
