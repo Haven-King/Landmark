@@ -40,7 +40,22 @@ public class NameRenderer extends DrawableHelper {
 			}
 
 			matrices.push();
-			matrices.translate(5, 5, 0);
+
+			int width = MinecraftClient.getInstance().getWindow().getScaledWidth();
+			int height = MinecraftClient.getInstance().getWindow().getScaledHeight();
+			float textWidth = textRenderer.getWidth(NAME) * 2F * CONFIG.namePopupScale;
+
+			switch (CONFIG.namePopupRenderLocation) {
+				case LEFT:
+					matrices.translate(CONFIG.namePopupOffset, CONFIG.namePopupOffset, 0);
+					break;
+				case CENTER:
+					matrices.translate(width / 2F - textWidth / 2F, height / 4F, 0);
+					break;
+				case RIGHT:
+					matrices.translate(width - textWidth - CONFIG.namePopupOffset, CONFIG.namePopupOffset, 0);
+					break;
+			}
 
 			matrices.scale(2.F * CONFIG.namePopupScale, 2F * CONFIG.namePopupScale, 1);
 			textRenderer.drawWithShadow(matrices, NAME, 0, 0, alpha << 24 | 0x00FFFFFF);
@@ -59,5 +74,9 @@ public class NameRenderer extends DrawableHelper {
 			NAME_DISPLAY_TOTAL_TICKS = duration() * 20;
 			NAME = landmarkName;
 		}
+	}
+
+	public enum RenderLocation {
+		LEFT, CENTER, RIGHT
 	}
 }

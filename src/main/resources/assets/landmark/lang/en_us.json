@@ -19,5 +19,12 @@
   "deeds.landmark.delete.message": "Select a landmark to delete:",
   "deeds.landmark.delete.fail": "Failed to delete landmark. %s",
   "dimension.landmark.the_nether": "The Nether",
-  "dimension.landmark.the_end": "The End"
+  "dimension.landmark.the_end": "The End",
+  "text.autoconfig.landmark.title": "Landmark",
+  "text.autoconfig.landmark.option.namePopupDuration": "Name Popup Duration",
+  "text.autoconfig.landmark.option.namePopupFadeIn": "Name Popup Fade-in Time",
+  "text.autoconfig.landmark.option.namePopupFadeOut": "Name Popup Fade-out Time",
+  "text.autoconfig.landmark.option.namePopupScale": "Name Popup Scale",
+  "text.autoconfig.landmark.option.namePopupOffset": "Name Popup Offset",
+  "text.autoconfig.landmark.option.namePopupRenderLocation": "Name Popup Location"
 }
