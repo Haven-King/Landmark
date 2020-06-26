@@ -1,5 +1,7 @@
 package dev.hephaestus.landmark.api;
 
+import java.util.Iterator;
+
 import dev.hephaestus.landmark.impl.LandmarkMod;
 
 import net.minecraft.structure.StructureStart;
@@ -11,9 +13,6 @@ import net.minecraft.util.registry.SimpleRegistry;
 import net.minecraft.world.ServerWorldAccess;
 
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
-
-import java.util.Collection;
-import java.util.Iterator;
 
 public class LandmarkTypeRegistry {
 	private static final RegistryKey<Registry<LandmarkType>> KEY = RegistryKey.ofRegistry(LandmarkMod.id("landmarks"));

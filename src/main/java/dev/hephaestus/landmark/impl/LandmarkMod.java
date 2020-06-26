@@ -13,11 +13,10 @@ import nerdhub.cardinal.components.api.ComponentRegistry;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.event.ChunkComponentCallback;
 import nerdhub.cardinal.components.api.event.WorldComponentCallback;
-import net.minecraft.util.registry.RegistryTracker;
-import net.minecraft.world.dimension.DimensionType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.util.Identifier;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;

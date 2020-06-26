@@ -1,11 +1,14 @@
 package dev.hephaestus.landmark.impl.util;
 
+import java.util.ArrayList;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import dev.hephaestus.landmark.impl.LandmarkMod;
+
 import net.minecraft.predicate.NumberRange;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
@@ -19,8 +22,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.feature.StructureFeature;
-
-import java.util.ArrayList;
 
 public class LandmarkLocationPredicate {
 	private final NumberRange.FloatRange y;
@@ -111,6 +112,7 @@ public class LandmarkLocationPredicate {
 
 		if (this.dimension != null) {
 			DimensionType testDimension = null;
+
 			if (world instanceof ServerWorld) {
 				testDimension = LandmarkMod.DIMENSION_TYPE_REGISTRY.get(((ServerWorld) world).getDimensionRegistryKey());
 			} else if (world instanceof WorldChunk) {

@@ -1,7 +1,11 @@
 package dev.hephaestus.landmark.impl.util;
 
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.JsonElement;
@@ -27,12 +31,12 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.Pair;
 
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.Pair;
 
 public class LandmarkHandler {
 	private final ServerPlayerEntity playerEntity;
@@ -56,6 +60,7 @@ public class LandmarkHandler {
 			LandmarkType type = it.next();
 
 			Pair<Integer, LandmarkType> testResults = type.test(null, playerEntity.getBlockPos(), playerEntity.getServerWorld());
+
 			if (testResults.getLeft() >= 0 && !otherLandmarkStatuses.containsKey(type.getId())) {
 				text = type.generateName();
 				this.otherLandmarkStatuses.put(type.getId(), true);
