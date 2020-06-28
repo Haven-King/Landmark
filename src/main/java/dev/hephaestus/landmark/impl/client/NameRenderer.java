@@ -46,15 +46,15 @@ public class NameRenderer extends DrawableHelper {
 			float textWidth = textRenderer.getWidth(NAME) * 2F * CONFIG.namePopupScale;
 
 			switch (CONFIG.namePopupRenderLocation) {
-				case LEFT:
-					matrices.translate(CONFIG.namePopupOffset, CONFIG.namePopupOffset, 0);
-					break;
-				case CENTER:
-					matrices.translate(width / 2F - textWidth / 2F, height / 4F, 0);
-					break;
-				case RIGHT:
-					matrices.translate(width - textWidth - CONFIG.namePopupOffset, CONFIG.namePopupOffset, 0);
-					break;
+			case LEFT:
+				matrices.translate(CONFIG.namePopupOffset, CONFIG.namePopupOffset, 0);
+				break;
+			case CENTER:
+				matrices.translate(width / 2F - textWidth / 2F, height / 4F, 0);
+				break;
+			case RIGHT:
+				matrices.translate(width - textWidth - CONFIG.namePopupOffset, CONFIG.namePopupOffset, 0);
+				break;
 			}
 
 			matrices.scale(2.F * CONFIG.namePopupScale, 2F * CONFIG.namePopupScale, 1);

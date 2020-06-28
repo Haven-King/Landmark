@@ -3,6 +3,7 @@
   "id": "landmark",
   "version": "${version}",
   "name": "Landmark",
+  "description": "Landmark is a small mod that gives names to various structures in Minecraft that appear when you enter them",
   "authors": [
     "Haven King"
   ],

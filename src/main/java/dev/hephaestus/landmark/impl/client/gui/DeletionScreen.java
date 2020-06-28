@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import dev.hephaestus.landmark.impl.client.gui.widget.LandmarkButtonWidget;
 import dev.hephaestus.landmark.impl.client.gui.widget.TextWidget;
+import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
@@ -35,9 +36,11 @@ public class DeletionScreen extends LandmarkScreen {
 				List<UUID> sections = LandmarkChunkComponent.of(this.client.world.getChunk(this.client.player.chunkX, this.client.player.chunkZ)).getIds();
 
 				for (int i = 0; i < sections.size(); ++i) {
-					if (tracker.get(sections.get(i)).canModify(this.client.player)) {
+					Landmark landmark = tracker.get(sections.get(i));
+
+					if (landmark != null && landmark.canModify(this.client.player)) {
 						int finalI = i;
-						ButtonWidget widget = new LandmarkButtonWidget(width / 2 - 100, width / 10 + 24 * i, 200, 20, tracker.get(sections.get(i)), (action) -> {
+						ButtonWidget widget = new LandmarkButtonWidget(width / 2 - 100, width / 10 + 24 * this.buttons.size(), 200, 20, landmark, (action) -> {
 							PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 							buf.writeUuid(sections.get(finalI));
 							buf.writeBoolean(false);
