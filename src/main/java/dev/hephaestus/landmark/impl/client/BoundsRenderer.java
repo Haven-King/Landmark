@@ -65,8 +65,14 @@ public class BoundsRenderer {
 				}
 
 				if (selected != null) {
-					Landmark landmark = LandmarkTrackingComponent.of(MinecraftClient.getInstance().world).get(selected);
-					Vector3f color = landmark.getColor();
+					Vector3f color;
+
+//					if (tag.contains("delete_mode") && tag.getBoolean("delete_mode")) {
+//						color = Vector3f.POSITIVE_X;
+//					} else {
+						Landmark landmark = LandmarkTrackingComponent.of(MinecraftClient.getInstance().world).get(selected);
+						color = landmark.getColor();
+//					}
 
 					if (tag.contains("marker")) {
 						BlockPos pos1 = BlockPos.fromLong(tag.getLong("marker"));
@@ -82,7 +88,7 @@ public class BoundsRenderer {
 						BlockBox box = new BlockBox(pos1, pos2);
 
 						WorldRenderer.drawBox(matrices, linesVertexConsumer, box.minX, box.minY, box.minZ, box.maxX + 1, box.maxY + 1, box.maxZ + 1, color.getX(), color.getY(), color.getZ(), 1);
-					} else if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.isSneaking()) {
+					} else if (MinecraftClient.getInstance().player != null) {
 						HitResult result = MinecraftClient.getInstance().crosshairTarget;
 
 						if (result instanceof BlockHitResult) {

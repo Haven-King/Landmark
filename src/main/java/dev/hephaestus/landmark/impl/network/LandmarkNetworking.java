@@ -5,6 +5,7 @@ import dev.hephaestus.landmark.impl.client.gui.EditScreen;
 import dev.hephaestus.landmark.impl.client.gui.DeletionScreen;
 import dev.hephaestus.landmark.impl.client.gui.ClaimScreen;
 import dev.hephaestus.landmark.impl.client.NameRenderer;
+import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 
@@ -27,6 +28,8 @@ public class LandmarkNetworking implements ModInitializer, ClientModInitializer 
 	public static final Identifier TRACKER_CLAIM_LANDMARK = packetId("tracker", "claim_landmark");
 	public static final Identifier TRACKER_DELETE_LANDMARK = packetId("tracker", "delete");
 
+	public static final Identifier TOGGLE_DELETE_MODE = packetId("deed", "delete_mode", "toggle");
+
 	public static final Identifier ENTERED_LANDMARK = packetId("entered");
 
 	@Override
@@ -35,6 +38,7 @@ public class LandmarkNetworking implements ModInitializer, ClientModInitializer 
 		ServerSidePacketRegistry.INSTANCE.register(TRACKER_DELETE_LANDMARK, LandmarkTrackingComponent::delete);
 		ServerSidePacketRegistry.INSTANCE.register(TRACKER_CLAIM_LANDMARK, LandmarkTrackingComponent::claim);
 		ServerSidePacketRegistry.INSTANCE.register(TRACKER_NEW_LANDMARK, LandmarkTrackingComponent::newLandmark);
+		ServerSidePacketRegistry.INSTANCE.register(TOGGLE_DELETE_MODE, DeedItem::toggleDeleteMode);
 	}
 
 	@Override

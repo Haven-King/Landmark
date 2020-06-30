@@ -46,6 +46,7 @@ public class PlayerLandmark extends Landmark {
 		return super.toTag(tag);
 	}
 
+	public static boolean tryingSubtraction = false;
 	@Override
 	public Landmark fromTag(World world, CompoundTag tag) {
 		super.fromTag(world, tag);
@@ -58,7 +59,7 @@ public class PlayerLandmark extends Landmark {
 		return this;
 	}
 
-	public int add(LandmarkSection section, double maxVolume, boolean checks) {
+	public int add(LandmarkSection section, double maxVolume, BooleanBiFunction function, boolean checks) {
 		VoxelShape added = VoxelShapes.cuboid(
 				section.minX,
 				section.minY,
@@ -77,11 +78,13 @@ public class PlayerLandmark extends Landmark {
 				section.maxZ + 1
 		);
 
-		if (!checks || (this.shape != null && !VoxelShapes.matchesAnywhere(comparison, this.shape, BooleanBiFunction.AND))) {
+		if (!checks || (this.shape != null && !this.shape.isEmpty() && !VoxelShapes.matchesAnywhere(comparison, this.shape, BooleanBiFunction.AND))) {
 			return 1;
 		}
 
-		VoxelShape newShape = this.shape == null ? added : VoxelShapes.union(this.shape, added);
+		tryingSubtraction = true;
+		VoxelShape newShape = this.shape == null || this.shape.isEmpty() ? added : VoxelShapes.combine(this.shape, added, function);
+		tryingSubtraction = false;
 
 		List<Double> volumes = new LinkedList<>();
 		newShape.forEachBox((x1, y1, z1, x2, y2, z2) -> volumes.add((x2 - x1) * (y2 - y1) * (z2 - z1)));
@@ -93,7 +96,7 @@ public class PlayerLandmark extends Landmark {
 		}
 
 		if (volume <= maxVolume) {
-			this.shape = newShape/*.simplify()*/;
+			this.shape = newShape;
 			this.volume = volume;
 			return 0;
 		}
@@ -102,7 +105,7 @@ public class PlayerLandmark extends Landmark {
 	}
 
 	public boolean add(LandmarkSection section) {
-		return this.add(section, Double.MAX_VALUE, false) == 0;
+		return this.add(section, Double.MAX_VALUE, BooleanBiFunction.OR, false) == 0;
 	}
 
 	public void makeSections() {

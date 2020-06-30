@@ -6,7 +6,8 @@
     "entity.ServerPlayerEntityMixin",
     "server.world.ThreadedAnvilChunkStorageMixin",
     "structure.StructureStartMixin",
-    "util.registry.RegistryTrackerModifiableMixin"
+    "util.registry.RegistryTrackerModifiableMixin",
+    "util.shape.VoxelShapesMixin"
   ],
   "client": [
     "client.render.GameRendererMixin",

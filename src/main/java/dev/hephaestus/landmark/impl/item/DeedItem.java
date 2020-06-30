@@ -10,6 +10,7 @@ import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.buffer.Unpooled;
 
+import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -29,6 +30,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.util.registry.Registry;
@@ -89,7 +91,8 @@ public class DeedItem extends Item {
 				PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(data.landmarkId);
 
 				if (landmark.canModify(playerEntity)) {
-					int result = landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume, true);
+					BooleanBiFunction function = /*data.deleteMode ? BooleanBiFunction.NOT_SECOND :*/ BooleanBiFunction.OR;
+					int result = landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume, function, true);
 
 					if (result == 0) {
 						double volume = landmark.volume();
@@ -190,6 +193,21 @@ public class DeedItem extends Item {
 		return super.use(world, user, hand);
 	}
 
+	public static void toggleDeleteMode(PacketContext context, PacketByteBuf packetByteBuf) {
+		context.getTaskQueue().execute(() -> {
+			ItemStack stack = context.getPlayer().getMainHandStack();
+			if (stack.getItem() instanceof DeedItem) {
+				CompoundTag tag = context.getPlayer().getMainHandStack().getOrCreateTag();
+
+				if (tag.contains("delete_mode")) {
+					tag.putBoolean("delete_mode", !tag.getBoolean("delete_mode"));
+				} else {
+					tag.putBoolean("delete_mode", true);
+				}
+			}
+		});
+	}
+
 	public static class Data {
 		public final UUID landmarkId;
 		public final RegistryKey<World> world;
@@ -197,6 +215,7 @@ public class DeedItem extends Item {
 		public final boolean isGenerated;
 		public final double volume;
 		public final BlockPos marker;
+		public final boolean deleteMode;
 
 		public Data(World world, PlayerEntity player, CompoundTag tag) {
 			if (tag.contains("landmark_id")) {
@@ -209,6 +228,7 @@ public class DeedItem extends Item {
 					this.isGenerated = tag.contains("is_generated") && tag.getBoolean("is_generated");
 					this.volume = tag.contains("volume") ? tag.getDouble("volume") : 0;
 					this.marker = tag.contains("marker") ? BlockPos.fromLong(tag.getLong("marker")) : null;
+					this.deleteMode = tag.contains("delete_mode") && tag.getBoolean("delete_mode");
 				} else {
 					Landmark landmark = new PlayerLandmark(world, this.landmarkId);
 
@@ -232,6 +252,8 @@ public class DeedItem extends Item {
 					this.volume = 0;
 
 					this.marker = null;
+
+					this.deleteMode = false;
 				}
 			} else {
 				Landmark landmark = new PlayerLandmark(world);
@@ -257,6 +279,8 @@ public class DeedItem extends Item {
 				this.volume = 0;
 
 				this.marker = null;
+
+				this.deleteMode = false;
 			}
 		}
 
