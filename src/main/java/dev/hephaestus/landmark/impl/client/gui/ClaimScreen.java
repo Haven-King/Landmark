@@ -20,13 +20,22 @@ import net.minecraft.util.Hand;
 
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.PacketContext;
+import net.minecraft.util.math.BlockPos;
 
 public class ClaimScreen extends LandmarkScreen {
 	private final Hand hand;
+	private final BlockPos claimPos;
 
 	public ClaimScreen(PacketContext context, PacketByteBuf buf) {
 		super(context, buf);
 		this.hand = buf.readEnumConstant(Hand.class);
+
+		if (buf.readBoolean()) {
+			this.claimPos = buf.readBlockPos();
+		} else {
+			this.claimPos = null;
+		}
+
 		context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(this));
 	}
 
@@ -50,6 +59,7 @@ public class ClaimScreen extends LandmarkScreen {
 							PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 							buf.writeUuid(sections.get(finalI));
 							buf.writeEnumConstant(this.hand);
+
 							ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkNetworking.TRACKER_CLAIM_LANDMARK, buf);
 							client.openScreen(null);
 						});
@@ -61,6 +71,12 @@ public class ClaimScreen extends LandmarkScreen {
 				ButtonWidget newLandmark = new ButtonWidget(width / 2 - 100, width / 10 + 24 * this.buttons.size(), 200, 20, new TranslatableText("deeds.landmark.create").styled(style -> style.withColor(Formatting.GREEN)), (action) -> {
 					PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 					buf.writeEnumConstant(this.hand);
+					buf.writeBoolean(this.claimPos != null);
+
+					if (this.claimPos != null) {
+						buf.writeBlockPos(this.claimPos);
+					}
+
 					ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkNetworking.TRACKER_NEW_LANDMARK, buf);
 				});
 

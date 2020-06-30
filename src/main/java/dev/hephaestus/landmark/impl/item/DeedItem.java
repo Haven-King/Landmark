@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
@@ -28,10 +29,11 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.*;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.RayTraceContext;
 import net.minecraft.world.World;
 
 import net.fabricmc.loader.api.FabricLoader;
@@ -55,63 +57,69 @@ public class DeedItem extends Item {
 	@Override
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		if (!context.getWorld().isClient && context.getPlayer() != null) {
-			ItemStack stack = context.getPlayer().getStackInHand(context.getHand());
+			return this.useOnBlock((ServerPlayerEntity) context.getPlayer(), context.getHand(), context.getBlockPos());
+		}
 
-			if (stack.hasTag()) {
-				CompoundTag tag = stack.getOrCreateTag();
-				Data data = new Data(context.getWorld(), context.getPlayer(), tag);
+		return ActionResult.SUCCESS;
+	}
 
-				if (data.isGenerated) {
-					return ActionResult.PASS;
+	private ActionResult useOnBlock(ServerPlayerEntity playerEntity, Hand hand, BlockPos marker) {
+		ItemStack stack = playerEntity.getStackInHand(hand);
+		if (stack.hasTag()) {
+			CompoundTag tag = stack.getOrCreateTag();
+			Data data = new Data(playerEntity.getServerWorld(), playerEntity, tag);
+
+			if (data.isGenerated) {
+				return ActionResult.PASS;
+			}
+
+			ServerWorld world = playerEntity.getServerWorld();
+
+			if (data.marker != null) {
+				if (!data.world.equals(world.getRegistryKey())) {
+					playerEntity.sendMessage(new TranslatableText("deeds.landmark.fail.world"), true);
+					return ActionResult.FAIL;
 				}
 
-				ServerWorld world = (ServerWorld) context.getWorld();
+				tag.remove("marker");
 
-				if (data.marker != null) {
-					if (!data.world.equals(world.getRegistryKey())) {
-						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.world"), true);
+				BlockBox newBox = new BlockBox(data.marker, marker);
+
+				LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
+				PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(data.landmarkId);
+
+				if (landmark.canModify(playerEntity)) {
+					int result = landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume, true);
+
+					if (result == 0) {
+						double volume = landmark.volume();
+						landmark.makeSections();
+						tag.putDouble("volume", volume);
+						playerEntity.sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
+						return ActionResult.SUCCESS;
+					} else if (result == 1) {
+						playerEntity.sendMessage(new TranslatableText("deeds.landmark.fail.overlap", this.maxVolume), true);
 						return ActionResult.FAIL;
-					}
-
-					tag.remove("marker");
-					BlockPos marker = context.getBlockPos();
-
-					BlockBox newBox = new BlockBox(data.marker, marker);
-
-					LandmarkTrackingComponent trackingComponent = LandmarkTrackingComponent.of(world);
-					PlayerLandmark landmark = (PlayerLandmark) trackingComponent.get(data.landmarkId);
-
-					if (landmark.canModify(context.getPlayer())) {
-						int result = landmark.add(new LandmarkSection(landmark.getId(), newBox), this.maxVolume, true);
-
-						if (result == 0) {
-							double volume = landmark.volume();
-							landmark.makeSections();
-							tag.putDouble("volume", volume);
-							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.success.add_box", volume), true);
-							return ActionResult.SUCCESS;
-						} else if (result == 1) {
-							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.overlap", this.maxVolume), true);
-							return ActionResult.FAIL;
-						} else if (result == 2) {
-							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.volume", this.maxVolume), true);
-							return ActionResult.FAIL;
-						} else {
-							context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.other", this.maxVolume), true);
-							return ActionResult.FAIL;
-						}
+					} else if (result == 2) {
+						playerEntity.sendMessage(new TranslatableText("deeds.landmark.fail.volume", this.maxVolume), true);
+						return ActionResult.FAIL;
 					} else {
-						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.fail.permissions"), true);
+						playerEntity.sendMessage(new TranslatableText("deeds.landmark.fail.other", this.maxVolume), true);
 						return ActionResult.FAIL;
 					}
 				} else {
-					tag.putLong("marker", context.getBlockPos().asLong());
+					playerEntity.sendMessage(new TranslatableText("deeds.landmark.fail.permissions"), true);
+					return ActionResult.FAIL;
 				}
 			} else {
-				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-				buf.writeEnumConstant(context.getHand());
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer(context.getPlayer(), LandmarkNetworking.OPEN_CLAIM_SCREEN, buf);
+				tag.putLong("marker", marker.asLong());
 			}
+		} else {
+			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+			buf.writeEnumConstant(hand);
+			buf.writeBoolean(true);
+			buf.writeBlockPos(marker);
+			ServerSidePacketRegistry.INSTANCE.sendToPlayer(playerEntity, LandmarkNetworking.OPEN_CLAIM_SCREEN, buf);
 		}
 
 		return ActionResult.SUCCESS;
@@ -146,20 +154,35 @@ public class DeedItem extends Item {
 		super.appendTooltip(stack, world, tooltip, context);
 	}
 
+	private static BlockHitResult traceForBlock(ServerPlayerEntity player) {
+		double d = 5;
+		Vec3d angle = player.getRotationVec(1F);
+		return player.world.rayTrace(new RayTraceContext(
+				player.getCameraPosVec(1F),
+				player.getCameraPosVec(1F).add(d * angle.x, d * angle.y, d * angle.z),
+				RayTraceContext.ShapeType.OUTLINE, RayTraceContext.FluidHandling.NONE, player
+		));
+	}
+
 	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
 		if (!world.isClient) {
 			if (user.getStackInHand(hand).hasTag()) {
-				CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
-				Data data = new Data(world, user, tag);
+				if (user.isSneaking()) {
+					this.useOnBlock((ServerPlayerEntity) user, hand, traceForBlock((ServerPlayerEntity) user).getBlockPos());
+				} else {
+					CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
+					Data data = new Data(world, user, tag);
 
-				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-				buf.writeEnumConstant(hand);
-				buf.writeUuid(data.landmarkId);
-				ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, LandmarkNetworking.OPEN_EDIT_SCREEN, buf);
+					PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+					buf.writeEnumConstant(hand);
+					buf.writeUuid(data.landmarkId);
+					ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, LandmarkNetworking.OPEN_EDIT_SCREEN, buf);
+				}
 			} else {
 				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 				buf.writeEnumConstant(hand);
+				buf.writeBoolean(false);
 				ServerSidePacketRegistry.INSTANCE.sendToPlayer(user, LandmarkNetworking.OPEN_CLAIM_SCREEN, buf);
 			}
 		}

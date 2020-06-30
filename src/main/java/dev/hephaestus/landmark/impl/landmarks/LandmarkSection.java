@@ -131,23 +131,15 @@ public class LandmarkSection implements Comparable<LandmarkSection> {
 	}
 
 	@Environment(EnvType.CLIENT)
-	public void render(MatrixStack matrices, VertexConsumer vertexConsumer) {
-		float alpha = 0.25F;
-
+	public void render(MatrixStack matrices, VertexConsumer vertexConsumer, UUID selected) {
 		PlayerEntity player = MinecraftClient.getInstance().player;
-
 		if (player != null) {
 			double dx = ((this.minX + this.maxX) / 2D) - player.getX();
 			double dy = ((this.minY + this.maxY) / 2D) - player.getY();
 			double dz = ((this.minZ + this.maxZ) / 2D) - player.getZ();
 
 			if (dx < 300 && dy < 300 && dz < 300) {
-				CompoundTag tag = player.getMainHandStack().getOrCreateTag();
-
-				if (tag.contains("landmark_id")) {
-					UUID id = tag.getUuid("landmark_id");
-					alpha = id.equals(this.parent) ? 1F : 0.25F;
-				}
+				float alpha = this.parent.equals(selected) ? 0.75F : 0.25F;
 
 				Landmark landmark = LandmarkTrackingComponent.of(MinecraftClient.getInstance().world).get(this.parent);
 

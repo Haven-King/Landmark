@@ -222,8 +222,13 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 
 	public static void newLandmark(PacketContext context, PacketByteBuf packetByteBuf) {
 		Hand hand = packetByteBuf.readEnumConstant(Hand.class);
+		BlockPos pos = packetByteBuf.readBoolean() ? packetByteBuf.readBlockPos() : null;
 
 		context.getTaskQueue().execute(() -> {
+			if (pos != null) {
+				context.getPlayer().getStackInHand(hand).getOrCreateTag().putLong("marker", pos.asLong());
+			}
+
 			DeedItem.Data data = new DeedItem.Data(context.getPlayer().getEntityWorld(), context.getPlayer(), context.getPlayer().getStackInHand(hand).getOrCreateTag());
 
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
