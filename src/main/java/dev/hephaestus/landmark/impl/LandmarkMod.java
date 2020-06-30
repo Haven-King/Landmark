@@ -32,7 +32,11 @@ public class LandmarkMod implements ModInitializer {
 	public static final String MOD_NAME = "Landmark";
 	public static final Logger LOG = LogManager.getLogger(MOD_NAME);
 
-	public static final Executor EXECUTOR = Executors.newFixedThreadPool(8);
+	public static final Executor EXECUTOR = Executors.newCachedThreadPool((runnable) -> {
+		Thread t = new Thread();
+		t.setDaemon(true);
+		return t;
+	});
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(id("items")).icon(() -> new ItemStack(LandmarkMod.COMMON_DEED)).build();
 

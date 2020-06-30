@@ -10,6 +10,8 @@ import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.names.provider.NameComponentProvider;
 import org.apache.commons.lang3.text.WordUtils;
 
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.resource.ResourceManager;
@@ -41,7 +43,13 @@ public class NameGenerator {
 			throw new IllegalArgumentException("Name provider not registered for \"" + id.toString() + "\"");
 		}
 
-		return new LiteralText(WordUtils.capitalize(provider.generateComponent().getString().trim())).styled(style -> style.withColor(provider.getColor()));
+		Text text = provider.generateComponent();
+
+		if (text instanceof TranslatableText) {
+			return ((TranslatableText) text).styled(style -> style.withColor(provider.getColor()));
+		} else {
+			return new LiteralText(WordUtils.capitalize(provider.generateComponent().getString().trim())).styled(style -> style.withColor(provider.getColor()));
+		}
 	}
 
 	public static void init() {

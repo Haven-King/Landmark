@@ -1,6 +1,7 @@
 package dev.hephaestus.landmark.impl.util;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -27,13 +28,13 @@ public class LandmarkLocationPredicate {
 	private final NumberRange.FloatRange y;
 
 	private final StructureFeature<?> feature;
-	private final DimensionType dimension;
+	private final RegistryKey<DimensionType> dimension;
 	private final ArrayList<Biome> biomes = new ArrayList<>();
 
 	public LandmarkLocationPredicate(NumberRange.FloatRange y, StructureFeature<?> feature, RegistryKey<DimensionType> dimension) {
 		this.y = y;
 		this.feature = feature;
-		this.dimension = LandmarkMod.DIMENSION_TYPE_REGISTRY.get(dimension);
+		this.dimension = dimension;
 	}
 
 	public StructureFeature<?> getFeature() {
@@ -119,7 +120,7 @@ public class LandmarkLocationPredicate {
 				testDimension = world.getDimension();
 			}
 
-			if (!this.dimension.equals(testDimension)) {
+			if (!Objects.equals(LandmarkMod.DIMENSION_TYPE_REGISTRY.get(this.dimension), testDimension)) {
 				return -1;
 			} else {
 				result -= 5;
