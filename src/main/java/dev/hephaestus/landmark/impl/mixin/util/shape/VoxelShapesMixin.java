@@ -1,11 +1,8 @@
 package dev.hephaestus.landmark.impl.mixin.util.shape;
 
-import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
-import net.minecraft.util.function.BooleanBiFunction;
-import net.minecraft.util.shape.VoxelShapes;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+
+import net.minecraft.util.shape.VoxelShapes;
 
 @Mixin(VoxelShapes.class)
 public class VoxelShapesMixin {

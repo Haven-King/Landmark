@@ -20,7 +20,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 
 public class PlayerLandmark extends Landmark {
-	private VoxelShape shape;
+	private VoxelShape shape = VoxelShapes.empty();
 	private double volume;
 
 	public PlayerLandmark(World world) {
@@ -39,9 +39,8 @@ public class PlayerLandmark extends Landmark {
 	public CompoundTag toTag(CompoundTag tag) {
 		tag.putString("type", "player");
 
-		if (this.shape != null) {
-			tag.put("shape", VoxelShapeSerializer.INSTANCE.toTag(new CompoundTag(), this.shape));
-		}
+		LandmarkMod.LOG.info("{} :- {}", this.getId(), this.shape);
+		tag.put("shape", VoxelShapeSerializer.INSTANCE.toTag(new CompoundTag(), this.shape));
 
 		return super.toTag(tag);
 	}
@@ -53,7 +52,10 @@ public class PlayerLandmark extends Landmark {
 
 		this.volume = tag.getDouble("volume");
 
-		this.shape = VoxelShapeSerializer.INSTANCE.fromTag(tag.getCompound("shape"));
+		if (tag.contains("shape")) {
+			this.shape = VoxelShapeSerializer.INSTANCE.fromTag(tag.getCompound("shape"));
+		}
+
 		this.makeSections();
 
 		return this;

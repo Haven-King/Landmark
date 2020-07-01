@@ -40,7 +40,7 @@ public class EditScreen extends LandmarkScreen {
 		if (tag != null && tag.contains("landmark_name")) {
 			Text text = Text.Serializer.fromJson(tag.getString("landmark_name"));
 			this.text = text == null ? new LiteralText("") : text;
-			this.textColor = text == null || text.getStyle() == null ? TextColor.fromFormatting(Formatting.WHITE) : text.getStyle().getColor();
+			this.textColor = text == null || text.getStyle() == null || text.getStyle().getColor() == null ? TextColor.fromFormatting(Formatting.WHITE) : text.getStyle().getColor();
 		} else {
 			this.text = new LiteralText("");
 			this.textColor = TextColor.fromFormatting(Formatting.WHITE);

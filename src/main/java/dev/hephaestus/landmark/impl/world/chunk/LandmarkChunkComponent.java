@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
 import dev.hephaestus.landmark.impl.LandmarkMod;
@@ -23,7 +22,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 
 public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChunkComponent.LandmarkContainer> {
-	private Queue<LandmarkSection> landmarkSections = new ConcurrentLinkedDeque<>();
+	private Queue<LandmarkSection> landmarkSections = new PriorityQueue<>();
 	private final Chunk chunk;
 
 	public LandmarkChunkComponent(Chunk chunk) {

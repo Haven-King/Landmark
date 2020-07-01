@@ -10,7 +10,6 @@ import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.buffer.Unpooled;
 
-import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -32,7 +31,9 @@ import net.minecraft.util.Rarity;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.RayTraceContext;
@@ -42,6 +43,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.network.PacketContext;
 
 public class DeedItem extends Item {
 	private final double maxVolume;
@@ -66,7 +68,8 @@ public class DeedItem extends Item {
 	}
 
 	private ActionResult useOnBlock(ServerPlayerEntity playerEntity, Hand hand, BlockPos marker) {
-		ItemStack stack = playerEntity.getStackInHand(hand);
+		ItemStack stack = validatedDeed(playerEntity.getServerWorld(), playerEntity.getStackInHand(hand));
+
 		if (stack.hasTag()) {
 			CompoundTag tag = stack.getOrCreateTag();
 			Data data = new Data(playerEntity.getServerWorld(), playerEntity, tag);
@@ -174,7 +177,7 @@ public class DeedItem extends Item {
 				if (user.isSneaking()) {
 					this.useOnBlock((ServerPlayerEntity) user, hand, traceForBlock((ServerPlayerEntity) user).getBlockPos());
 				} else {
-					CompoundTag tag = user.getStackInHand(hand).getOrCreateTag();
+					CompoundTag tag = validatedDeed((ServerWorld) world, user.getStackInHand(hand)).getOrCreateTag();
 					Data data = new Data(world, user, tag);
 
 					PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
@@ -193,9 +196,26 @@ public class DeedItem extends Item {
 		return super.use(world, user, hand);
 	}
 
+	private static ItemStack validatedDeed(ServerWorld world, ItemStack deedItem) {
+		if (deedItem.getItem() instanceof DeedItem && deedItem.hasTag()) {
+			CompoundTag tag = deedItem.getOrCreateTag();
+
+			if (tag.contains("landmark_id")) {
+				UUID landmarkId = tag.getUuid("landmark_id");
+
+				if (LandmarkTrackingComponent.of(world).get(landmarkId) == null) {
+					deedItem.setTag(new CompoundTag());
+				}
+			}
+		}
+
+		return deedItem;
+	}
+
 	public static void toggleDeleteMode(PacketContext context, PacketByteBuf packetByteBuf) {
 		context.getTaskQueue().execute(() -> {
 			ItemStack stack = context.getPlayer().getMainHandStack();
+
 			if (stack.getItem() instanceof DeedItem) {
 				CompoundTag tag = context.getPlayer().getMainHandStack().getOrCreateTag();
 

@@ -133,6 +133,7 @@ public class LandmarkSection implements Comparable<LandmarkSection> {
 	@Environment(EnvType.CLIENT)
 	public void render(MatrixStack matrices, VertexConsumer vertexConsumer, UUID selected) {
 		PlayerEntity player = MinecraftClient.getInstance().player;
+
 		if (player != null) {
 			double dx = ((this.minX + this.maxX) / 2D) - player.getX();
 			double dy = ((this.minY + this.maxY) / 2D) - player.getY();

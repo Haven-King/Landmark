@@ -3,6 +3,11 @@
   "id": "landmark",
   "version": "${version}",
   "name": "Landmark",
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/landmark",
+    "sources": "https://github.com/Hephaestus-Dev/Landmark",
+    "issues": "https://github.com/Hephaestus-Dev/Landmark/issues"
+  },
   "description": "Landmark is a small mod that gives names to various structures in Minecraft that appear when you enter them",
   "authors": [
     "Haven King"
@@ -27,6 +32,12 @@
   "mixins": [
     "landmark.mixins.json"
   ],
+  "custom": {
+    "modupdater": {
+      "strategy": "curseforge",
+      "projectID": 391186
+    }
+  },
   "depends": {
     "fabricloader": ">=0.8.7+build.201",
     "fabric": "*"

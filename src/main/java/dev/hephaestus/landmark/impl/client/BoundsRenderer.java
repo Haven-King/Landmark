@@ -21,12 +21,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
 
@@ -67,12 +65,12 @@ public class BoundsRenderer {
 				if (selected != null) {
 					Vector3f color;
 
-//					if (tag.contains("delete_mode") && tag.getBoolean("delete_mode")) {
-//						color = Vector3f.POSITIVE_X;
-//					} else {
-						Landmark landmark = LandmarkTrackingComponent.of(MinecraftClient.getInstance().world).get(selected);
-						color = landmark.getColor();
-//					}
+					// if (tag.contains("delete_mode") && tag.getBoolean("delete_mode")) {
+					//   color = Vector3f.POSITIVE_X;
+					// } else {
+					Landmark landmark = LandmarkTrackingComponent.of(MinecraftClient.getInstance().world).get(selected);
+					color = landmark == null ? new Vector3f(1F, 1F, 1F) : landmark.getColor();
+					// }
 
 					if (tag.contains("marker")) {
 						BlockPos pos1 = BlockPos.fromLong(tag.getLong("marker"));
@@ -95,7 +93,6 @@ public class BoundsRenderer {
 							BlockPos pos = ((BlockHitResult) result).getBlockPos();
 							WorldRenderer.drawBox(matrices, linesVertexConsumer, pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1, color.getX(), color.getY(), color.getZ(), 1);
 						}
-
 					}
 				}
 			}

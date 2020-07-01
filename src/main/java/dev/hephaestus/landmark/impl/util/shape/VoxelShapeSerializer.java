@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.shape.ArrayVoxelShape;
 import net.minecraft.util.shape.SimpleVoxelShape;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 
 public class VoxelShapeSerializer implements Taggable<VoxelShape> {
 	// Fuck slices
@@ -22,7 +23,7 @@ public class VoxelShapeSerializer implements Taggable<VoxelShape> {
 			tag.putString("type", "simple");
 			return tag;
 		} else {
-			return null;
+			return new CompoundTag();
 		}
 	}
 
@@ -31,7 +32,7 @@ public class VoxelShapeSerializer implements Taggable<VoxelShape> {
 		switch (tag.getString("type")) {
 		case "array": return ArrayVoxelShapeSerializer.INSTANCE.fromTag(tag);
 		case "simple": return SimpleVoxelShapeSerializer.INSTANCE.fromTag(tag);
-		default: return null;
+		default: return VoxelShapes.empty();
 		}
 	}
 }
