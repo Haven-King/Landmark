@@ -39,7 +39,6 @@ public class PlayerLandmark extends Landmark {
 	public CompoundTag toTag(CompoundTag tag) {
 		tag.putString("type", "player");
 
-		LandmarkMod.LOG.info("{} :- {}", this.getId(), this.shape);
 		tag.put("shape", VoxelShapeSerializer.INSTANCE.toTag(new CompoundTag(), this.shape));
 
 		return super.toTag(tag);
