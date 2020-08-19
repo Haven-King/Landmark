@@ -1,8 +1,5 @@
 package dev.hephaestus.landmark.impl.mixin.structure;
 
-import java.util.List;
-import java.util.Random;
-
 import com.google.common.collect.ImmutableList;
 import dev.hephaestus.landmark.api.LandmarkType;
 import dev.hephaestus.landmark.api.LandmarkTypeRegistry;
@@ -10,6 +7,18 @@ import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.GeneratedLandmark;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.structure.StructurePiece;
+import net.minecraft.structure.StructureStart;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.StructureAccessor;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.feature.StructureFeature;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,19 +27,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.structure.StructurePiece;
-import net.minecraft.structure.StructureStart;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.math.BlockBox;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.ChunkRegion;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.gen.StructureAccessor;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.minecraft.world.gen.feature.StructureFeature;
+import java.util.List;
+import java.util.Random;
 
 @Mixin(StructureStart.class)
 public abstract class StructureStartMixin {
@@ -46,17 +44,8 @@ public abstract class StructureStartMixin {
 	@Unique private static final int EXPAND = 5;
 
 	@Inject(method = "generateStructure", at = @At(value = "INVOKE", target = "Lnet/minecraft/structure/StructureStart;setBoundingBoxFromChildren()V", shift = At.Shift.AFTER))
-	private void makeLandmark(ServerWorldAccess serverWorldAccess, StructureAccessor structureAccessor, ChunkGenerator chunkGenerator, Random random, BlockBox blockBox, ChunkPos chunkPos, CallbackInfo ci) {
-		ServerWorld world;
-
-		if (serverWorldAccess instanceof ServerWorld) {
-			world = (ServerWorld) serverWorldAccess;
-		} else if (serverWorldAccess instanceof ChunkRegion) {
-			//noinspection deprecation
-			world = ((ChunkRegion) serverWorldAccess).getWorld();
-		} else {
-			world = null;
-		}
+	private void makeLandmark(StructureWorldAccess structureWorldAccess, StructureAccessor structureAccessor, ChunkGenerator chunkGenerator, Random random, BlockBox blockBox, ChunkPos chunkPos, CallbackInfo ci) {
+		ServerWorld world = structureWorldAccess.toServerWorld();
 
 		ImmutableList<StructurePiece> list = ImmutableList.copyOf(this.children);
 		LandmarkMod.EXECUTOR.execute(() -> {

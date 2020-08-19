@@ -2,6 +2,7 @@ package dev.hephaestus.landmark.api;
 
 import java.util.Iterator;
 
+import com.mojang.serialization.Lifecycle;
 import dev.hephaestus.landmark.impl.LandmarkMod;
 
 import net.minecraft.structure.StructureStart;
@@ -19,8 +20,8 @@ public class LandmarkTypeRegistry {
 	private static final SimpleRegistry<LandmarkType> REGISTRY = FabricRegistryBuilder.createSimple(LandmarkType.class, LandmarkMod.id("landmarks")).buildAndRegister();
 
 	public static void register(LandmarkType landmarkType) {
-		if (!REGISTRY.containsId(landmarkType.getId())) {
-			REGISTRY.add(RegistryKey.of(KEY, landmarkType.getId()), landmarkType);
+		if (REGISTRY.get(landmarkType.getId()) == null) {
+			REGISTRY.add(RegistryKey.of(KEY, landmarkType.getId()), landmarkType, Lifecycle.stable());
 		}
 	}
 

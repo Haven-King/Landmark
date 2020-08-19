@@ -52,7 +52,7 @@ public class ClaimScreen extends LandmarkScreen {
 				for (int i = 0; i < sections.size(); ++i) {
 					Landmark landmark = tracker.get(sections.get(i));
 
-					if (landmark.canModify(this.client.player)) {
+					if (landmark != null && landmark.canModify(this.client.player)) {
 						int finalI = i;
 
 						ButtonWidget widget = new LandmarkButtonWidget(width / 2 - 100, width / 10 + 24 * i, 200, 20, landmark, (action) -> {

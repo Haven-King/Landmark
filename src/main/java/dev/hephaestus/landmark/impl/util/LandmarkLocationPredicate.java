@@ -29,7 +29,7 @@ public class LandmarkLocationPredicate {
 
 	private final StructureFeature<?> feature;
 	private final RegistryKey<DimensionType> dimension;
-	private final ArrayList<Biome> biomes = new ArrayList<>();
+	private final ArrayList<Identifier> biomes = new ArrayList<>();
 
 	public LandmarkLocationPredicate(NumberRange.FloatRange y, StructureFeature<?> feature, RegistryKey<DimensionType> dimension) {
 		this.y = y;
@@ -90,16 +90,7 @@ public class LandmarkLocationPredicate {
 
 	private void addBiome(DataResult<Identifier> identifierDataResult) {
 		Identifier id = identifierDataResult.resultOrPartial(LandmarkMod.LOG::error).orElse(null);
-
-		if (Registry.BIOME.containsId(id)) {
-			this.addBiome(Registry.BIOME.get(id));
-		}
-	}
-
-	private void addBiome(Biome biome) {
-		if (biome != null) {
-			this.biomes.add(biome);
-		}
+		this.biomes.add(id);
 	}
 
 	public int test(StructureStart<?> structureStart, BlockPos pos, ServerWorldAccess world) {
@@ -112,15 +103,11 @@ public class LandmarkLocationPredicate {
 		}
 
 		if (this.dimension != null) {
-			DimensionType testDimension = null;
+			DimensionType testDimension = world.getDimension();
 
-			if (world instanceof ServerWorld) {
-				testDimension = LandmarkMod.DIMENSION_TYPE_REGISTRY.get(((ServerWorld) world).getDimensionRegistryKey());
-			} else if (world instanceof WorldChunk) {
-				testDimension = world.getDimension();
-			}
+			DimensionType thisDimension = world.getRegistryManager().get(Registry.DIMENSION_TYPE_KEY).get(this.dimension);
 
-			if (!Objects.equals(LandmarkMod.DIMENSION_TYPE_REGISTRY.get(this.dimension), testDimension)) {
+			if (testDimension != thisDimension) {
 				return -1;
 			} else {
 				result -= 5;
@@ -131,8 +118,8 @@ public class LandmarkLocationPredicate {
 			boolean testPassed = false;
 			Biome targetBiome = world.getBiome(pos);
 
-			for (Biome biome : this.biomes) {
-				if (biome == targetBiome) {
+			for (Identifier id : this.biomes) {
+				if (id.equals(world.getRegistryManager().get(Registry.BIOME_KEY).getId(targetBiome))) {
 					testPassed = true;
 					break;
 				}

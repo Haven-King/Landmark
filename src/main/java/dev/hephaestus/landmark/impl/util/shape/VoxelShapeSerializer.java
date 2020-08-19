@@ -1,7 +1,7 @@
 package dev.hephaestus.landmark.impl.util.shape;
 
 import dev.hephaestus.landmark.impl.util.Taggable;
-import dev.hephaestus.landmark.impl.util.shape.lithium.LithiumVoxelShapeSerializer;
+//import dev.hephaestus.landmark.impl.util.shape.lithium.LithiumVoxelShapeSerializer;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.shape.ArrayVoxelShape;
@@ -25,8 +25,8 @@ public class VoxelShapeSerializer implements Taggable<VoxelShape> {
 			SimpleVoxelShapeSerializer.INSTANCE.toTag(tag, (SimpleVoxelShape) voxelShape);
 			tag.putString("type", "simple");
 			return tag;
-		} else if (FabricLoader.getInstance().isModLoaded("lithium")) {
-			return LithiumVoxelShapeSerializer.INSTANCE.toTag(tag, voxelShape);
+//		} else if (FabricLoader.getInstance().isModLoaded("lithium")) {
+//			return LithiumVoxelShapeSerializer.INSTANCE.toTag(tag, voxelShape);
 		} else {
 			return new CompoundTag();
 		}
@@ -38,11 +38,11 @@ public class VoxelShapeSerializer implements Taggable<VoxelShape> {
 		case "array": return ArrayVoxelShapeSerializer.INSTANCE.fromTag(tag);
 		case "simple": return SimpleVoxelShapeSerializer.INSTANCE.fromTag(tag);
 		default:
-			if (FabricLoader.getInstance().isModLoaded("lithium")) {
-				return LithiumVoxelShapeSerializer.INSTANCE.fromTag(tag);
-			} else {
+//			if (FabricLoader.getInstance().isModLoaded("lithium")) {
+//				return LithiumVoxelShapeSerializer.INSTANCE.fromTag(tag);
+//			} else {
 				return VoxelShapes.empty();
-			}
+//			}
 		}
 	}
 }

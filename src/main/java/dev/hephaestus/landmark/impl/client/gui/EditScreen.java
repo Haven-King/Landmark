@@ -55,7 +55,7 @@ public class EditScreen extends LandmarkScreen {
 
 		if (this.deedId != null) {
 			this.client = client;
-			this.client.keyboard.enableRepeatEvents(true);
+			this.client.keyboard.setRepeatEvents(true);
 			TextFieldWidget nameField = new TextFieldWidget(this.client.textRenderer, width / 4, height / 2 - 10, width / 2, 20, new LiteralText(""));
 			nameField.setText(this.text.asString());
 			nameField.setEditableColor(this.textColor.getRgb());

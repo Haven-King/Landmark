@@ -29,8 +29,8 @@ public class NameGenerator {
 	private static SimpleRegistry<NameComponentProvider> REGISTRY = new SimpleRegistry<>(KEY, Lifecycle.stable());
 
 	public static NameComponentProvider register(NameComponentProvider provider) {
-		if (!REGISTRY.containsId(provider.getId())) {
-			REGISTRY.add(RegistryKey.of(KEY, provider.getId()), provider);
+		if (REGISTRY.get(provider.getId()) == null) {
+			REGISTRY.add(RegistryKey.of(KEY, provider.getId()), provider, Lifecycle.stable());
 		}
 
 		return REGISTRY.get(provider.getId());

@@ -40,7 +40,7 @@ dependencies {
     modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:${project.cca_version}"
     modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-chunk:${project.cca_version}"
     modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-world:${project.cca_version}"
-    modImplementation "com.github.jellysquid3:lithium-fabric:${project.lithium_version}"
+//    modImplementation "com.github.jellysquid3:lithium-fabric:${project.lithium_version}"
 
     modApi ("me.shedaniel.cloth:config-2:${project.cloth_config_version}") {
         transitive = false
