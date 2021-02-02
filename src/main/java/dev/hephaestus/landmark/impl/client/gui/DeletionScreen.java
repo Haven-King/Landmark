@@ -11,18 +11,19 @@ import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.TranslatableText;
 
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
 
 public class DeletionScreen extends LandmarkScreen {
-	public DeletionScreen(PacketContext context, PacketByteBuf buf) {
-		super(context, buf);
-		context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(this));
+	public DeletionScreen(MinecraftClient client, ClientPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
+		super(client, network, buf, sender);
+		client.execute(() -> MinecraftClient.getInstance().openScreen(this));
 	}
 
 	@Override

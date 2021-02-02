@@ -14,12 +14,18 @@ import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
 import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import io.netty.buffer.Unpooled;
-import nerdhub.cardinal.components.api.util.sync.WorldSyncedComponent;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
@@ -33,9 +39,8 @@ import net.minecraft.world.World;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.PacketContext;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 
-public class LandmarkTrackingComponent implements WorldSyncedComponent {
+public class LandmarkTrackingComponent implements AutoSyncedComponent {
 	private final World world;
 
 	private final ConcurrentHashMap<BlockPos, Landmark> generatedLandmarks = new ConcurrentHashMap<>();
@@ -56,7 +61,6 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 			this.add(landmark, ((GeneratedLandmark) landmark).getCenter());
 		} else {
 			this.landmarks.put(landmark.getId(), landmark);
-			this.sync();
 		}
 	}
 
@@ -64,7 +68,6 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		if (!this.generatedLandmarks.containsKey(center)) {
 			this.landmarks.put(landmark.getId(), landmark);
 			this.generatedLandmarks.put(center, landmark);
-			this.sync();
 		}
 	}
 
@@ -81,7 +84,7 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 	}
 
 	@Override
-	public void fromTag(CompoundTag tag) {
+	public void readFromNbt(CompoundTag tag) {
 		this.landmarks = new ConcurrentHashMap<>();
 		this.searcher = new ConcurrentHashMap<>();
 
@@ -107,7 +110,7 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 	}
 
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
+	public void writeToNbt(CompoundTag tag) {
 		CompoundTag landmarksTag = new CompoundTag();
 
 		for (Landmark landmark : this.landmarks.values()) {
@@ -123,8 +126,6 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		}
 
 		tag.put("generated", generatedTag);
-
-		return tag;
 	}
 
 	public MutableText getName(UUID landmark) {
@@ -133,12 +134,12 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 	}
 
 	@Environment(EnvType.CLIENT)
-	public static void read(PacketContext context, PacketByteBuf buf) {
+	public static void read(MinecraftClient client, ClientPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
 		CompoundTag tag = buf.readCompoundTag();
 
-		context.getTaskQueue().execute(() -> {
+		client.execute(() -> {
 			if (tag != null) {
-				LandmarkClient.TRACKER.fromTag(tag);
+				LandmarkClient.TRACKER.readFromNbt(tag);
 			}
 		});
 	}
@@ -155,12 +156,11 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		return this.generatedLandmarks.containsKey(pos);
 	}
 
-	@Override
 	public World getWorld() {
 		return this.world;
 	}
 
-	public static void delete(PacketContext context, PacketByteBuf buf) {
+	public static void delete(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
 		UUID id = buf.readUuid();
 		boolean wasEditScreen = buf.readBoolean();
 		Hand hand = null;
@@ -170,43 +170,41 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		}
 
 		Hand finalHand = hand;
-		context.getTaskQueue().execute(() -> {
-			LandmarkTrackingComponent tracker = of(context.getPlayer().getEntityWorld());
+		server.execute(() -> {
+			LandmarkTrackingComponent tracker = of(player.getEntityWorld());
 			Landmark landmark = tracker.get(id);
 
-			if (landmark.canModify(context.getPlayer())) {
+			if (landmark.canModify(player)) {
 				for (ChunkPos pos : landmark.getChunks()) {
 					LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(landmark.getWorld().getChunk(pos.x, pos.z));
 					component.remove(landmark);
-					component.sync();
 				}
 
 				tracker.landmarks.remove(id);
 
 				if (finalHand != null) {
-					context.getPlayer().setStackInHand(finalHand, new ItemStack(context.getPlayer().getStackInHand(finalHand).getItem()));
+					player.setStackInHand(finalHand, new ItemStack(player.getStackInHand(finalHand).getItem()));
 				}
 
-				tracker.sync();
 			} else {
-				context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.delete.fail", new TranslatableText("deeds.landmark.fail.permissions")), true);
+				player.sendMessage(new TranslatableText("deeds.landmark.delete.fail", new TranslatableText("deeds.landmark.fail.permissions")), true);
 			}
 		});
 	}
 
-	public static void claim(PacketContext context, PacketByteBuf packetByteBuf) {
-		UUID id = packetByteBuf.readUuid();
-		Hand hand = packetByteBuf.readEnumConstant(Hand.class);
+	public static void claim(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
+		UUID id = buf.readUuid();
+		Hand hand = buf.readEnumConstant(Hand.class);
 
-		context.getTaskQueue().execute(() -> {
-			LandmarkTrackingComponent tracker = of(context.getPlayer().getEntityWorld());
+		server.execute(() -> {
+			LandmarkTrackingComponent tracker = of(player.getEntityWorld());
 			Landmark landmark = tracker.get(id);
 
-			if (landmark != null && landmark.canModify(context.getPlayer())) {
-				landmark.withOwner(context.getPlayer());
-				CompoundTag tag = context.getPlayer().getStackInHand(hand).getOrCreateTag();
+			if (landmark != null && landmark.canModify(player)) {
+				landmark.withOwner(player);
+				CompoundTag tag = player.getStackInHand(hand).getOrCreateTag();
 				tag.putUuid("landmark_id", id);
-				tag.putString("world_key", context.getPlayer().getEntityWorld().getRegistryKey().getValue().toString());
+				tag.putString("world_key", player.getEntityWorld().getRegistryKey().getValue().toString());
 				tag.putString("landmark_name", Text.Serializer.toJson(landmark.getName()));
 
 				if (landmark instanceof GeneratedLandmark) {
@@ -220,21 +218,21 @@ public class LandmarkTrackingComponent implements WorldSyncedComponent {
 		});
 	}
 
-	public static void newLandmark(PacketContext context, PacketByteBuf packetByteBuf) {
-		Hand hand = packetByteBuf.readEnumConstant(Hand.class);
-		BlockPos pos = packetByteBuf.readBoolean() ? packetByteBuf.readBlockPos() : null;
+	public static void newLandmark(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
+		Hand hand = buf.readEnumConstant(Hand.class);
+		BlockPos pos = buf.readBoolean() ? buf.readBlockPos() : null;
 
-		context.getTaskQueue().execute(() -> {
+		server.execute(() -> {
 			if (pos != null) {
-				context.getPlayer().getStackInHand(hand).getOrCreateTag().putLong("marker", pos.asLong());
+				player.getStackInHand(hand).getOrCreateTag().putLong("marker", pos.asLong());
 			}
 
-			DeedItem.Data data = new DeedItem.Data(context.getPlayer().getEntityWorld(), context.getPlayer(), context.getPlayer().getStackInHand(hand).getOrCreateTag());
+			DeedItem.Data data = new DeedItem.Data(player.getEntityWorld(), player, player.getStackInHand(hand).getOrCreateTag());
 
-			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-			buf.writeEnumConstant(hand);
-			buf.writeUuid(data.landmarkId);
-			ServerSidePacketRegistry.INSTANCE.sendToPlayer(context.getPlayer(), LandmarkNetworking.OPEN_EDIT_SCREEN, buf);
+			PacketByteBuf newBuf = new PacketByteBuf(Unpooled.buffer());
+			newBuf.writeEnumConstant(hand);
+			newBuf.writeUuid(data.landmarkId);
+			sender.sendPacket(LandmarkNetworking.OPEN_EDIT_SCREEN, newBuf);
 		});
 	}
 }

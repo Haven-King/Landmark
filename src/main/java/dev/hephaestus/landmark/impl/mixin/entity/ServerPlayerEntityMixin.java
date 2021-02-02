@@ -21,7 +21,6 @@ import net.minecraft.world.World;
 public abstract class ServerPlayerEntityMixin extends LivingEntity {
 	protected ServerPlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
 		super(entityType, world);
-		LandmarkTrackingComponent.of(world).syncWith((ServerPlayerEntity) (Object) this);
 	}
 
 	@Unique private LandmarkHandler landmarkHandler;

@@ -11,6 +11,8 @@ import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
+import dev.onyxstudios.cca.api.v3.component.ComponentV3;
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import nerdhub.cardinal.components.api.component.Component;
 import nerdhub.cardinal.components.api.util.sync.ChunkSyncedComponent;
 
@@ -21,7 +23,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 
-public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChunkComponent.LandmarkContainer> {
+public class LandmarkChunkComponent implements AutoSyncedComponent {
 	private Queue<LandmarkSection> landmarkSections = new PriorityQueue<>();
 	private final Chunk chunk;
 
@@ -30,7 +32,7 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 	}
 
 	@Override
-	public void fromTag(CompoundTag tag) {
+	public void readFromNbt(CompoundTag tag) {
 		this.landmarkSections = new PriorityQueue<>();
 		ListTag landmarkTag = tag.getList("landmarks", 10);
 
@@ -41,7 +43,7 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 	}
 
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
+	public void writeToNbt(CompoundTag tag) {
 		ListTag landmarkTag = tag.getList("landmarks", 10);
 
 		for (LandmarkSection section : this.landmarkSections) {
@@ -49,8 +51,6 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 		}
 
 		tag.put("landmarks", landmarkTag);
-
-		return tag;
 	}
 
 	public void add(LandmarkSection section) {
@@ -75,12 +75,11 @@ public class LandmarkChunkComponent implements ChunkSyncedComponent<LandmarkChun
 		return LandmarkMod.CHUNK_COMPONENT.get(chunk);
 	}
 
-	@Override
 	public Chunk getChunk() {
 		return this.chunk;
 	}
 
-	public interface LandmarkContainer extends Component {
+	public interface LandmarkContainer extends ComponentV3 {
 		void add(LandmarkSection section);
 		void remove(PlayerLandmark landmark);
 		Collection<LandmarkSection> getSections();

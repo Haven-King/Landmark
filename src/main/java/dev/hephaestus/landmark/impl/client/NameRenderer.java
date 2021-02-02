@@ -2,9 +2,11 @@ package dev.hephaestus.landmark.impl.client;
 
 import static dev.hephaestus.landmark.impl.LandmarkClient.CONFIG;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
@@ -67,7 +69,7 @@ public class NameRenderer extends DrawableHelper {
 	}
 
 	@Environment(EnvType.CLIENT)
-	public static void accept(PacketContext context, PacketByteBuf buf) {
+	public static void accept(MinecraftClient client, ClientPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
 		Text landmarkName = buf.readText();
 
 		if (NAME_DISPLAY_TOTAL_TICKS <= 0) {

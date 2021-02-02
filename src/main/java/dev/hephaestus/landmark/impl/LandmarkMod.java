@@ -7,6 +7,12 @@ import dev.hephaestus.landmark.impl.util.LandmarkHandler;
 import dev.hephaestus.landmark.impl.util.ThreadFactory;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
+import dev.onyxstudios.cca.api.v3.chunk.ChunkComponentFactoryRegistry;
+import dev.onyxstudios.cca.api.v3.chunk.ChunkComponentInitializer;
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
+import dev.onyxstudios.cca.api.v3.world.WorldComponentFactoryRegistry;
+import dev.onyxstudios.cca.api.v3.world.WorldComponentInitializer;
 import nerdhub.cardinal.components.api.ComponentRegistry;
 import nerdhub.cardinal.components.api.ComponentType;
 import nerdhub.cardinal.components.api.event.ChunkComponentCallback;
@@ -25,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class LandmarkMod implements ModInitializer {
+public class LandmarkMod implements ModInitializer, ChunkComponentInitializer, WorldComponentInitializer {
 	public static final String MODID = "landmark";
 	public static final String MOD_NAME = "Landmark";
 	public static final Logger LOG = LogManager.getLogger(MOD_NAME);
@@ -41,12 +47,12 @@ public class LandmarkMod implements ModInitializer {
 
 	public static final Item EVITION_NOTICE = new EvictionNoticeItem(new Item.Settings().group(ITEM_GROUP).rarity(Rarity.EPIC));
 
-	public static final ComponentType<LandmarkChunkComponent> CHUNK_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
+	public static final ComponentKey<LandmarkChunkComponent> CHUNK_COMPONENT = ComponentRegistryV3.INSTANCE.getOrCreate(
 			id("component", "chunk"),
 			LandmarkChunkComponent.class
 	);
 
-	public static final ComponentType<LandmarkTrackingComponent> TRACKING_COMPONENT = ComponentRegistry.INSTANCE.registerIfAbsent(
+	public static final ComponentKey<LandmarkTrackingComponent> TRACKING_COMPONENT = ComponentRegistryV3.INSTANCE.getOrCreate(
 			id("component", "tracking"),
 			LandmarkTrackingComponent.class
 	);
@@ -60,13 +66,20 @@ public class LandmarkMod implements ModInitializer {
 		NameGenerator.init();
 		LandmarkHandler.init();
 
-		ChunkComponentCallback.EVENT.register(((chunk, componentContainer) -> componentContainer.put(CHUNK_COMPONENT, new LandmarkChunkComponent(chunk))));
-		WorldComponentCallback.EVENT.register(((world, componentContainer) -> componentContainer.put(TRACKING_COMPONENT, new LandmarkTrackingComponent(world))));
-
 		Registry.register(Registry.ITEM, id("common_deed"), COMMON_DEED);
 		Registry.register(Registry.ITEM, id("uncommon_deed"), UNCOMMON_DEED);
 		Registry.register(Registry.ITEM, id("rare_deed"), RARE_DEED);
 		Registry.register(Registry.ITEM, id("creative_deed"), CREATIVE_DEED);
 		Registry.register(Registry.ITEM, id("eviction_notice"), EVITION_NOTICE);
+	}
+
+	@Override
+	public void registerChunkComponentFactories(ChunkComponentFactoryRegistry registry) {
+		registry.register(CHUNK_COMPONENT, LandmarkChunkComponent::new);
+	}
+
+	@Override
+	public void registerWorldComponentFactories(WorldComponentFactoryRegistry registry) {
+		registry.register(TRACKING_COMPONENT, LandmarkTrackingComponent::new);
 	}
 }

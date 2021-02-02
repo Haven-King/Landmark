@@ -9,6 +9,8 @@ import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.util.Identifier;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -34,20 +36,20 @@ public class LandmarkNetworking implements ModInitializer, ClientModInitializer 
 
 	@Override
 	public void onInitialize() {
-		ServerSidePacketRegistry.INSTANCE.register(SAVE_LANDMARK_NAME, Landmark::saveName);
-		ServerSidePacketRegistry.INSTANCE.register(TRACKER_DELETE_LANDMARK, LandmarkTrackingComponent::delete);
-		ServerSidePacketRegistry.INSTANCE.register(TRACKER_CLAIM_LANDMARK, LandmarkTrackingComponent::claim);
-		ServerSidePacketRegistry.INSTANCE.register(TRACKER_NEW_LANDMARK, LandmarkTrackingComponent::newLandmark);
-		ServerSidePacketRegistry.INSTANCE.register(TOGGLE_DELETE_MODE, DeedItem::toggleDeleteMode);
+		ServerPlayNetworking.registerGlobalReceiver(SAVE_LANDMARK_NAME, Landmark::saveName);
+		ServerPlayNetworking.registerGlobalReceiver(TRACKER_DELETE_LANDMARK, LandmarkTrackingComponent::delete);
+		ServerPlayNetworking.registerGlobalReceiver(TRACKER_CLAIM_LANDMARK, LandmarkTrackingComponent::claim);
+		ServerPlayNetworking.registerGlobalReceiver(TRACKER_NEW_LANDMARK, LandmarkTrackingComponent::newLandmark);
+		ServerPlayNetworking.registerGlobalReceiver(TOGGLE_DELETE_MODE, DeedItem::toggleDeleteMode);
 	}
 
 	@Override
 	public void onInitializeClient() {
-		ClientSidePacketRegistry.INSTANCE.register(OPEN_EDIT_SCREEN, EditScreen::new);
-		ClientSidePacketRegistry.INSTANCE.register(OPEN_DELETION_SCREEN, DeletionScreen::new);
-		ClientSidePacketRegistry.INSTANCE.register(OPEN_CLAIM_SCREEN, ClaimScreen::new);
-		ClientSidePacketRegistry.INSTANCE.register(TRACKER_SYNC, LandmarkTrackingComponent::read);
-		ClientSidePacketRegistry.INSTANCE.register(ENTERED_LANDMARK, NameRenderer::accept);
+		ClientPlayNetworking.registerGlobalReceiver(OPEN_EDIT_SCREEN, EditScreen::new);
+		ClientPlayNetworking.registerGlobalReceiver(OPEN_DELETION_SCREEN, DeletionScreen::new);
+		ClientPlayNetworking.registerGlobalReceiver(OPEN_CLAIM_SCREEN, ClaimScreen::new);
+		ClientPlayNetworking.registerGlobalReceiver(TRACKER_SYNC, LandmarkTrackingComponent::read);
+		ClientPlayNetworking.registerGlobalReceiver(ENTERED_LANDMARK, NameRenderer::accept);
 	}
 
 	private static Identifier packetId(String... args) {

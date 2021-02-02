@@ -9,6 +9,7 @@ import dev.hephaestus.landmark.impl.item.DeedItem;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.util.internal.ConcurrentSet;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -18,6 +19,9 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -27,8 +31,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-
-import net.fabricmc.fabric.api.network.PacketContext;
 
 public abstract class Landmark {
 	protected final Collection<ChunkPos> chunks = new ConcurrentSet<>();
@@ -65,7 +67,6 @@ public abstract class Landmark {
 			this.color = new Vector3f(1F, 1F, 1F);
 		}
 
-		LandmarkTrackingComponent.of(this.world).sync();
 	}
 
 	public abstract boolean add(LandmarkSection section);
@@ -166,29 +167,28 @@ public abstract class Landmark {
 		return Objects.hash(id);
 	}
 
-	public static void saveName(PacketContext context, PacketByteBuf buf) {
+	public static void saveName(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
 		UUID id = buf.readUuid();
 		MutableText name = (MutableText) buf.readText();
 		Hand hand = buf.readEnumConstant(Hand.class);
 
-		context.getTaskQueue().execute(() -> {
-			ItemStack stack = context.getPlayer().getStackInHand(hand);
+		server.execute(() -> {
+			ItemStack stack = player.getStackInHand(hand);
 
 			if (stack.getItem() instanceof DeedItem) {
 				CompoundTag tag = stack.getOrCreateTag();
-				ServerWorld world = (ServerWorld) context.getPlayer().getEntityWorld();
-				DeedItem.Data data = new DeedItem.Data(world, context.getPlayer(), tag);
+				ServerWorld world = (ServerWorld) player.getEntityWorld();
+				DeedItem.Data data = new DeedItem.Data(world, player, tag);
 
 				LandmarkTrackingComponent tracker = LandmarkTrackingComponent.of(world);
 				Landmark landmark = tracker.get(id);
 
 				if (data.landmarkId.equals(id)) {
-					if (landmark.canModify(context.getPlayer())) {
+					if (landmark.canModify(player)) {
 						tag.putString("landmark_name", Text.Serializer.toJson(name));
 						landmark.setName(name);
-						tracker.sync();
 					} else {
-						context.getPlayer().sendMessage(new TranslatableText("deeds.landmark.rename.fail"), true);
+						player.sendMessage(new TranslatableText("deeds.landmark.rename.fail"), true);
 					}
 				}
 			}

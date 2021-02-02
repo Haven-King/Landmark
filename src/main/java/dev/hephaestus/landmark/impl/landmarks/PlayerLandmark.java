@@ -142,10 +142,8 @@ public class PlayerLandmark extends Landmark {
 			for (ChunkPos pos : this.chunks) {
 				tracker.put(pos, this);
 				LandmarkChunkComponent component = LandmarkMod.CHUNK_COMPONENT.get(this.getWorld().getChunk(pos.x, pos.z));
-				component.sync();
 			}
 
-			tracker.sync();
 		}
 	}
 

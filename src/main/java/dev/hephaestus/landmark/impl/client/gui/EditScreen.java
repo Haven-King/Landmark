@@ -5,9 +5,11 @@ import java.util.UUID;
 import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import io.netty.buffer.Unpooled;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
@@ -19,7 +21,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
 
 public class EditScreen extends LandmarkScreen {
 	private final Text text;
@@ -28,10 +29,10 @@ public class EditScreen extends LandmarkScreen {
 
 	private TextColor textColor;
 
-	public EditScreen(PacketContext context, PacketByteBuf buf) {
-		super(context, buf);
+	public EditScreen(MinecraftClient client, ClientPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
+		super(client, network, buf, sender);
 
-		PlayerEntity playerEntity = context.getPlayer();
+		PlayerEntity playerEntity = client.player;
 		this.hand = buf.readEnumConstant(Hand.class);
 		this.deedId = buf.readUuid();
 
@@ -46,7 +47,7 @@ public class EditScreen extends LandmarkScreen {
 			this.textColor = TextColor.fromFormatting(Formatting.WHITE);
 		}
 
-		context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(this));
+		client.execute(() -> MinecraftClient.getInstance().openScreen(this));
 	}
 
 	@Override

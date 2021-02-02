@@ -1,8 +1,11 @@
 package dev.hephaestus.landmark.impl.client.gui;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
@@ -10,7 +13,7 @@ import net.minecraft.text.LiteralText;
 import net.fabricmc.fabric.api.network.PacketContext;
 
 public abstract class LandmarkScreen extends Screen {
-	protected LandmarkScreen(PacketContext context, PacketByteBuf buf) {
+	protected LandmarkScreen(MinecraftClient client, ClientPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
 		super(LiteralText.EMPTY);
 	}
 

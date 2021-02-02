@@ -23,6 +23,7 @@ import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -96,7 +97,7 @@ public class LandmarkHandler {
 		if (text != null) {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 			buf.writeText(text);
-			ServerSidePacketRegistry.INSTANCE.sendToPlayer(this.playerEntity, LandmarkNetworking.ENTERED_LANDMARK, buf);
+			ServerPlayNetworking.send(this.playerEntity, LandmarkNetworking.ENTERED_LANDMARK, buf);
 		}
 	}
 

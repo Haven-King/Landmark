@@ -61,7 +61,6 @@ public class GeneratedLandmark extends Landmark {
 						}
 					}
 
-					component.sync();
 				}
 			}
 

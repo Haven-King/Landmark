@@ -3,6 +3,7 @@ package dev.hephaestus.landmark.impl.item;
 import java.util.List;
 import java.util.UUID;
 
+import dev.hephaestus.landmark.impl.LandmarkMod;
 import dev.hephaestus.landmark.impl.landmarks.Landmark;
 import dev.hephaestus.landmark.impl.landmarks.LandmarkSection;
 import dev.hephaestus.landmark.impl.landmarks.PlayerLandmark;
@@ -10,6 +11,8 @@ import dev.hephaestus.landmark.impl.network.LandmarkNetworking;
 import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import io.netty.buffer.Unpooled;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -17,6 +20,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
@@ -36,14 +41,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.RayTraceContext;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
 
 public class DeedItem extends Item {
 	private final double maxVolume;
@@ -125,7 +129,7 @@ public class DeedItem extends Item {
 			buf.writeEnumConstant(hand);
 			buf.writeBoolean(true);
 			buf.writeBlockPos(marker);
-			ServerSidePacketRegistry.INSTANCE.sendToPlayer(playerEntity, LandmarkNetworking.OPEN_CLAIM_SCREEN, buf);
+			ServerPlayNetworking.send(playerEntity, LandmarkNetworking.OPEN_CLAIM_SCREEN, buf);
 		}
 
 		return ActionResult.SUCCESS;
@@ -163,10 +167,10 @@ public class DeedItem extends Item {
 	private static BlockHitResult traceForBlock(ServerPlayerEntity player) {
 		double d = 5;
 		Vec3d angle = player.getRotationVec(1F);
-		return player.world.rayTrace(new RayTraceContext(
+		return player.world.raycast(new RaycastContext(
 				player.getCameraPosVec(1F),
 				player.getCameraPosVec(1F).add(d * angle.x, d * angle.y, d * angle.z),
-				RayTraceContext.ShapeType.OUTLINE, RayTraceContext.FluidHandling.NONE, player
+				RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player
 		));
 	}
 
@@ -212,12 +216,12 @@ public class DeedItem extends Item {
 		return deedItem;
 	}
 
-	public static void toggleDeleteMode(PacketContext context, PacketByteBuf packetByteBuf) {
-		context.getTaskQueue().execute(() -> {
-			ItemStack stack = context.getPlayer().getMainHandStack();
+	public static void toggleDeleteMode(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
+		server.execute(() -> {
+			ItemStack stack = player.getMainHandStack();
 
 			if (stack.getItem() instanceof DeedItem) {
-				CompoundTag tag = context.getPlayer().getMainHandStack().getOrCreateTag();
+				CompoundTag tag = player.getMainHandStack().getOrCreateTag();
 
 				if (tag.contains("delete_mode")) {
 					tag.putBoolean("delete_mode", !tag.getBoolean("delete_mode"));

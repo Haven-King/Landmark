@@ -26,6 +26,12 @@
     ],
     "modmenu": [
       "dev.hephaestus.landmark.impl.LandmarkModMenuImplementation"
+    ],
+    "cardinal-components-chunk": [
+      "dev.hephaestus.landmark.impl.LandmarkMod"
+    ],
+    "cardinal-components-world": [
+      "dev.hephaestus.landmark.impl.LandmarkMod"
     ]
   },
   "accessWidener": "landmark.accesswidener",
@@ -36,10 +42,14 @@
     "modupdater": {
       "strategy": "curseforge",
       "projectID": 391186
-    }
+    },
+    "cardinal-components": [
+      "landmark:component.chunk",
+      "landmark:component.tracking"
+    ]
   },
   "depends": {
-    "minecraft": "1.16.2",
+    "minecraft": ">=1.16.2",
     "fabricloader": ">=0.8.7+build.201",
     "fabric": "*"
   }

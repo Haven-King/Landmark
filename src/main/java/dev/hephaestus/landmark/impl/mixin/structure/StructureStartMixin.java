@@ -80,10 +80,7 @@ public abstract class StructureStartMixin {
 					landmark.add(section);
 				}
 
-				world.getServer().submit(() -> {
-					GeneratedLandmark.resolve(landmark);
-					tracker.sync();
-				});
+				world.getServer().submit(() -> GeneratedLandmark.resolve(landmark));
 			}
 		});
 	}

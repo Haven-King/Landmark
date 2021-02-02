@@ -11,8 +11,11 @@ import dev.hephaestus.landmark.impl.world.LandmarkTrackingComponent;
 import dev.hephaestus.landmark.impl.world.chunk.LandmarkChunkComponent;
 import io.netty.buffer.Unpooled;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -20,14 +23,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Hand;
 
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
 
 public class ClaimScreen extends LandmarkScreen {
 	private final Hand hand;
 	private final BlockPos claimPos;
 
-	public ClaimScreen(PacketContext context, PacketByteBuf buf) {
-		super(context, buf);
+	public ClaimScreen(MinecraftClient client, ClientPlayNetworkHandler network, PacketByteBuf buf, PacketSender sender) {
+		super(client, network, buf, sender);
 		this.hand = buf.readEnumConstant(Hand.class);
 
 		if (buf.readBoolean()) {
@@ -36,7 +38,7 @@ public class ClaimScreen extends LandmarkScreen {
 			this.claimPos = null;
 		}
 
-		context.getTaskQueue().execute(() -> MinecraftClient.getInstance().openScreen(this));
+		client.execute(() -> MinecraftClient.getInstance().openScreen(this));
 	}
 
 	@Override
@@ -60,7 +62,7 @@ public class ClaimScreen extends LandmarkScreen {
 							buf.writeUuid(sections.get(finalI));
 							buf.writeEnumConstant(this.hand);
 
-							ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkNetworking.TRACKER_CLAIM_LANDMARK, buf);
+							ClientPlayNetworking.send(LandmarkNetworking.TRACKER_CLAIM_LANDMARK, buf);
 							client.openScreen(null);
 						});
 
@@ -77,7 +79,7 @@ public class ClaimScreen extends LandmarkScreen {
 						buf.writeBlockPos(this.claimPos);
 					}
 
-					ClientSidePacketRegistry.INSTANCE.sendToServer(LandmarkNetworking.TRACKER_NEW_LANDMARK, buf);
+					ClientPlayNetworking.send(LandmarkNetworking.TRACKER_NEW_LANDMARK, buf);
 				});
 
 				this.addButton(newLandmark);
