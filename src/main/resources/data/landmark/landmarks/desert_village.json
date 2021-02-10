@@ -1,0 +1,7 @@
+{
+  "name_generator": "landmark:desert_village",
+  "location": {
+    "feature": "village",
+    "biome": "minecraft:desert"
+  }
+}

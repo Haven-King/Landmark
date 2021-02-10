@@ -1,0 +1,7 @@
+{
+  "name_generator": "landmark:nether_fortress",
+  "color": "#880000",
+  "location": {
+    "feature": "fortress"
+  }
+}

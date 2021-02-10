@@ -1,0 +1,17 @@
+{
+  "name_generator": "landmark:snowy_village",
+  "location": {
+    "feature": "village",
+    "biome": [
+      "minecraft:taiga",
+      "minecraft:tundra",
+      "minecraft:snowy_tundra",
+      "minecraft:snowy_mountains",
+      "minecraft:snowy_beach",
+      "minecraft:snowy_taiga",
+      "minecraft:snowy_taiga_hills",
+      "minecraft:snowy_taiga_mountains",
+      "minecraft:snowy_river"
+    ]
+  }
+}

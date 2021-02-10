@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "landmark:creative_deed",
+    "landmark:epic_deed",
+    "landmark:rare_deed",
+    "landmark:uncommon_deed",
+    "landmark:common_deed"
+  ]
+}

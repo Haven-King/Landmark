@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "landmark:item/deed",
+    "layer1": "landmark:item/deed_badge"
+  }
+}

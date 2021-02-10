@@ -1,0 +1,7 @@
+{
+  "name_generator": "landmark:end_city",
+  "color": "#d791ea",
+  "location": {
+    "feature": "endcity"
+  }
+}

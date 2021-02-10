@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.hephaestus.landmark.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ServerWorldMixin",
+    "StructureStartMixin",
+    "ThreadedAnvilChunkStorageMixin"
+  ],
+  "client": [
+    "client.ClientWorldMixin",
+    "client.TextRendererMixin",
+    "client.WorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

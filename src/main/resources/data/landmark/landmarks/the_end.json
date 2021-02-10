@@ -1,0 +1,8 @@
+{
+  "name": "dimension.landmark.the_end",
+  "color": "dark_purple",
+  "location": {
+    "dimension": "minecraft:the_end",
+    "feature": null
+  }
+}

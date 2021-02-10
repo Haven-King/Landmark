@@ -1,0 +1,74 @@
+{
+  "type": "selector",
+  "reusable_components": [
+    ["b", "br", "bh", "d", "dr", "dh", "g", "gr", "gh", "kh", "r", "rh", "v", "z"],
+    ["a", "e", "o", "u", "a", "o", "u", "a", "e", "o", "u", "a", "o", "u", "a", "e", "o", "u", "a", "o", "u", "aa", "au"],
+    ["b", "bb", "br", "d", "dd", "dl", "dr", "fl", "g", "gg", "gn", "gm", "gl", "ggl", "gv", "gz", "k", "kk", "kl", "kv", "l", "ll", "lg", "lgr", "lv", "lb", "ld", "ldr", "ng", "nk", "rb", "rd", "rg", "zg", "zzg", "zzl", "zl"],
+    ["", "", "", "", "c", "d", "hm", "hk", "hn", "k", "m", "mm", "n", "nn", "r"],
+    ["", "", "", "", "b", "br", "c", "ch", "d", "fr", "g", "gr", "j", "k", "m", "n", "p", "q", "r", "t", "x", "z"],
+    ["u", "u", "u", "u", "u", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "ai", "ay", "ei", "eo", "ia", "ie", "oi"],
+    ["d", "ddr", "dr", "g", "gh", "k", "lb", "ldr", "lr", "lzr", "m", "mb", "mm", "mr", "n", "nd", "ndr", "nn", "r", "rd", "rg", "rr", "rs", "rv", "s", "t", "th", "v", "vr", "z", "zz"],
+    ["cr", "d", "n", "nt", "r", "rr", "sd"],
+    ["", "", "d", "g", "m", "n", "nth", "r", "rth", "s", "ss", "t"],
+    ["", "", "", "", "", "", "b", "c", "ch", "d", "f", "fr", "g", "h", "l", "m", "n", "p", "q", "r", "s", "sh", "t", "v", "z"],
+    ["u", "u", "u", "u", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "a", "e", "i", "o", "y", "ae", "ai", "ay", "ei", "eo", "ie", "io", "oa"],
+    ["d", "dh", "g", "gh", "k", "ldr", "ll", "m", "mm", "mr", "n", "nd", "ndr", "nn", "p", "ph", "r", "rg", "rl", "rm", "rr", "rs", "rv", "s", "ss", "t", "th", "v", "vn", "z", "zz"],
+    ["d", "l", "n", "nt", "ph", "r", "rr", "ss"],
+    ["", "", "", "", "", "l", "lth", "n", "nth", "r", "rth", "s", "ss", "t", "th"],
+    ["", "", "", "", "b", "c", "ch", "d", "fr", "g", "m", "n", "p", "q", "r", "s", "t", "v", "x", "z"],
+    ["u", "u", "u", "u", "a", "e", "i", "o", "y", "ae", "ai", "ay", "ei", "eo", "ia", "ie", "io", "oa", "oi"],
+    ["d", "dh", "dr", "g", "gh", "k", "l", "ldr", "ll", "lr", "m", "mm", "mr", "n", "nd", "ndr", "nn", "p", "ph", "r", "rl", "rm", "rr", "rs", "rv", "s", "ss", "t", "th", "v", "vn", "vr", "z", "zz"],
+    ["d", "l", "n", "nt", "ph", "r", "rr", "ss"],
+    ["", "", "", "d", "g", "l", "lth", "n", "nth", "r", "rth", "s", "ss", "t", "th"]
+  ],
+  "components": [
+    {
+      "type": "collector",
+      "components": [
+        0, 1, 3
+      ]
+    },
+    {
+      "type": "collector",
+      "components": [
+        0, 1, 2, 1, 3
+      ]
+    },
+    {
+      "type": "collector",
+      "components": [
+        9, 10, 11, 10, 13
+      ]
+    },
+    {
+      "type": "collector",
+      "components": [
+        9, 10, 11, 10, 12, 10, 13
+      ]
+    },
+    {
+      "type": "collector",
+      "components": [
+        14, 15, 16, 15, 18
+      ]
+    },
+    {
+      "type": "collector",
+      "components": [
+        14, 15, 16, 15, 17, 15
+      ]
+    },
+    {
+      "type": "collector",
+      "components": [
+        4, 5, 6, 5, 8
+      ]
+    },
+    {
+      "type": "collector",
+      "components": [
+        4, 5, 6, 5, 7, 5, 8
+      ]
+    }
+  ]
+}
